@@ -12,7 +12,7 @@ ImageSecureSend transfers photos directly between devices using WebRTC and end-t
 
 ## Disclaimer
 
-This project was developed with AI assistance ([Claude Code](https://claude.ai/claude-code)) with careful attention to security, but by someone without a formal background in computer science or security research. **If you are a security professional, we would love for you to audit this project.** Contributions, reviews, and security reports are very welcome.
+This project was developed with AI assistance ([Claude Code](https://claude.ai/claude-code)) with careful attention to security, but by someone without a formal background in computer science or security research.
 
 ## How It Works
 
@@ -96,7 +96,7 @@ Ideally, the WebRTC signaling server would be replaced by [iroh](https://iroh.co
 ## Requirements
 
 - Docker and Docker Compose
-- HTTPS (required for camera access in browsers) -- we recommend [Caddy](https://caddyserver.com/) as a reverse proxy for automatic Let's Encrypt certificates
+- HTTPS (required for camera access in browsers) -- I recommend [Caddy](https://caddyserver.com/) as a reverse proxy for automatic Let's Encrypt certificates
 - The devices must be able to reach each other (same network, or TURN relay)
 
 ## Quick Start
