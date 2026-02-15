@@ -2,7 +2,7 @@
 
 > **⚠️ WARNING: WORK IN PROGRESS ⚠️**
 > 
-> **This project is not ready for production use. Do not use it for sensitive data yet.**
+> **This project is not ready for production use. Do not use it yet. Breaking changes will come.**
 > 
 > This codebase has not been audited by security professionals. While built with security best practices in mind, it may contain vulnerabilities. Use at your own risk.
 
