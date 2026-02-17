@@ -2,7 +2,7 @@ services:
   imagesecurescan:
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: ./docker/Dockerfile
     ports:
       - "127.0.0.1:7395:8080"
     env_file:
