@@ -463,8 +463,60 @@
                         ${i18n.t('receive.download')}
                     </a>
                 </div>
+                <!-- Single-click shows inline confirmation before discarding -->
+                <div class="discard-btn" style="margin-top: 8px;">
+                    <button class="btn btn-action" style="width: 100%; background: #ffebee; color: #c62828; border: 1px solid #ef9a9a;" onclick="discardImage(${imageIndex})">
+                        ${i18n.t('receive.discard')}
+                    </button>
+                </div>
+                <div class="discard-confirm hidden" style="margin-top: 8px; padding: 12px; background: #fff3e0; border-radius: 8px; border: 1px solid #ffcc80; text-align: center;">
+                    <p style="margin: 0 0 10px 0; color: #e65100; font-weight: bold;">${i18n.t('receive.discardConfirm')}</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-action" style="flex: 1; background: #c62828; color: white;" onclick="doDiscard(${imageIndex})">
+                            ${i18n.t('receive.discardYes')}
+                        </button>
+                        <button class="btn btn-action btn-secondary" style="flex: 1;" onclick="cancelDiscard(${imageIndex})">
+                            ${i18n.t('receive.discardNo')}
+                        </button>
+                    </div>
+                </div>
             `;
             container.insertBefore(item, container.firstChild);
+        }
+
+        // ============ Image Discard ============
+
+        /**
+         * Show the inline discard confirmation for an image.
+         * Hides the discard button and shows Yes/No prompt in the same card.
+         */
+        function discardImage(imageIndex) {
+            const card = document.querySelector(`[data-image-index="${imageIndex}"]`);
+            card.querySelector('.discard-btn').classList.add('hidden');
+            card.querySelector('.discard-confirm').classList.remove('hidden');
+        }
+
+        /**
+         * Cancel the discard confirmation - restore the discard button.
+         */
+        function cancelDiscard(imageIndex) {
+            const card = document.querySelector(`[data-image-index="${imageIndex}"]`);
+            card.querySelector('.discard-btn').classList.remove('hidden');
+            card.querySelector('.discard-confirm').classList.add('hidden');
+        }
+
+        /**
+         * Actually discard the image: set its slot in receivedImages to null
+         * (preserving the indices of other images) and remove its DOM card.
+         * The PDF generator filters out nulls, so discarded images won't appear in PDFs.
+         */
+        function doDiscard(imageIndex) {
+            logger.info(`Discarding image ${imageIndex}`);
+            receivedImages[imageIndex] = null;
+            const card = document.querySelector(`[data-image-index="${imageIndex}"]`);
+            card.remove();
+            updatePdfButton();
+            logger.success(`Image ${imageIndex} discarded`);
         }
 
         // ============ Fingerprint Verification ============
@@ -539,15 +591,20 @@
 
         // ============ PDF Generation (no external dependencies) ============
 
-        /** Show/update the PDF download button with current image count */
+        /** Show/update the PDF download button with current (non-discarded) image count */
         function updatePdfButton() {
             const section = document.getElementById('pdf-section');
             const btn = document.getElementById('download-pdf-btn');
-            if (receivedImages.length > 0) {
+            // Only count images that haven't been discarded (null marks discarded entries)
+            const activeCount = receivedImages.filter(img => img !== null).length;
+            if (activeCount > 0) {
                 section.classList.remove('hidden');
-                const plural = receivedImages.length > 1 ? 's' : '';
-                btn.textContent = '📄 ' + i18n.t('receive.downloadPdfCount', { count: receivedImages.length, plural: plural });
+                const plural = activeCount > 1 ? 's' : '';
+                btn.textContent = '📄 ' + i18n.t('receive.downloadPdfCount', { count: activeCount, plural: plural });
                 btn.onclick = generatePdf;
+            } else {
+                // Hide PDF button when all images have been discarded
+                section.classList.add('hidden');
             }
         }
 
@@ -562,8 +619,9 @@
             btn.textContent = i18n.t('receive.generatingPdf');
 
             try {
-                // Convert all images to JPEG (canvas) for consistent PDF embedding
-                const jpegs = await Promise.all(receivedImages.map(img => toJpegData(img.data, img.mimeType)));
+                // Convert all non-discarded images to JPEG for consistent PDF embedding
+                const activeImages = receivedImages.filter(img => img !== null);
+                const jpegs = await Promise.all(activeImages.map(img => toJpegData(img.data, img.mimeType)));
 
                 // Build PDF
                 const pdf = buildPdf(jpegs);
