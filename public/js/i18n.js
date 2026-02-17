@@ -47,6 +47,7 @@ const i18n = (function() {
             'about.credits.text': 'Built with',
             'about.credits.link': 'Claude Code',
             'about.credits.suffix': '(AI-assisted development).',
+            'about.credits.repo': 'Source code on GitHub',
 
             // Send page
             'send.title': 'Send Photos',
@@ -173,6 +174,7 @@ const i18n = (function() {
             'about.credits.text': 'Développé avec',
             'about.credits.link': 'Claude Code',
             'about.credits.suffix': '(développement assisté par IA).',
+            'about.credits.repo': 'Code source sur GitHub',
 
             // Send page
             'send.title': 'Envoyer des Photos',
