@@ -101,6 +101,8 @@ Ideally, the WebRTC signaling server would be replaced by [iroh](https://iroh.co
 
 ## Quick Start
 
+0. Go to `./docker`
+
 1. Copy the environment file and configure your domain/IP:
    ```bash
    cp env.example env

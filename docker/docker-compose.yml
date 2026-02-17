@@ -1,7 +1,7 @@
 services:
   imagesecurescan:
     build:
-      context: .
+      context: ..
       dockerfile: Dockerfile
     ports:
       - "7395:8080"
