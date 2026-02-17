@@ -19,3 +19,5 @@ Thumbs.db
 
 docker/env
 .aider.*
+
+deploy.sh
