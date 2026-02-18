@@ -61,8 +61,7 @@ services:
   #     --fingerprint
   #     --no-multicast-peers
   #     --no-cli
-  #     --no-tlsv1
-  #     --no-tlsv1_1
+  #     --no-tls
   #     --realm=imagesecuresend
   #     --min-port=49152
   #     --max-port=49156
