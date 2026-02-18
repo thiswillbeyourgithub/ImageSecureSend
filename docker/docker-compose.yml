@@ -1,6 +1,6 @@
 services:
-  imagesecurescan:
-    container_name: imagesecurescan
+  imagesecuresend:
+    container_name: imagesecuresend
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
@@ -63,7 +63,7 @@ services:
   #     --no-cli
   #     --no-tlsv1
   #     --no-tlsv1_1
-  #     --realm=imagesecurescan
+  #     --realm=imagesecuresend
   #     --min-port=49152
   #     --max-port=49156
   #     --listening-port=3479

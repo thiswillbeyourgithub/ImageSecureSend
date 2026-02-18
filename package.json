@@ -1,5 +1,5 @@
 {
-  "name": "ImageSecureScan",
+  "name": "ImageSecureSend",
   "version": "1.0.0",
   "description": "Secure photo sharing between devices using WebRTC",
   "main": "server.js",
