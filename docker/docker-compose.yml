@@ -68,4 +68,5 @@ services:
   #     --listening-port=3479
   #     --external-ip=${DOMAIN:-127.0.0.1}
   #     --no-stun
+  #     --check-origin-consistency
   #     --cpus=1
