@@ -60,6 +60,7 @@ services:
   #     --fingerprint
   #     --no-multicast-peers
   #     --no-cli
+  #     --no-dtls
   #     --no-tls
   #     --realm=imagesecuresend
   #     --min-port=49152
