@@ -4,7 +4,8 @@
   "description": "Secure photo sharing between devices using WebRTC",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "update-sri": "node update-sri.js"
   },
   "dependencies": {
     "express": "^4.18.2"
