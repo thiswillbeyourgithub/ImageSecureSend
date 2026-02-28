@@ -132,6 +132,7 @@ See `env.example` for all available environment variables.
 | `TURN_SERVER` | TURN relay server (`host:port`) | _(empty -- no relay)_ |
 | `TURN_SECRET` | Shared secret for TURN time-based credentials | _(empty)_ |
 | `TURN_CREDENTIAL_TTL` | TURN credential validity in seconds | `86400` (24h) |
+| `TURNS_PORT` | TURN-over-TLS (TURNS) port; enables `turns:` ICE candidates | _(empty -- TURNS disabled)_ |
 
 ## Troubleshooting
 
