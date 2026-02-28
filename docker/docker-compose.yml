@@ -64,6 +64,15 @@ services:
   #     --no-cli
   #     --no-dtls
   #     --no-tls
+  #     # To enable TURNS (TURN-over-TLS), remove --no-tls above and add:
+  #     # --tls-listening-port=${TURNS_PORT:-5349}
+  #     # --cert=/etc/coturn/certs/cert.pem
+  #     # --pkey=/etc/coturn/certs/key.pem
+  #     # Then mount the certificate files via a volume:
+  #     # volumes:
+  #     #   - /path/to/certs:/etc/coturn/certs:ro
+  #     # And expose the TURNS port:
+  #     #   - "${TURNS_PORT:-5349}:${TURNS_PORT:-5349}/tcp"
   #     --realm=imagesecuresend
   #     --min-port=49152
   #     --max-port=49156

@@ -25,6 +25,9 @@ const TURN_SERVER = process.env.TURN_SERVER || '';
 const TURN_SECRET = process.env.TURN_SECRET || '';
 // TURN_CREDENTIAL_TTL: how long TURN credentials are valid (default: 24 hours)
 const TURN_CREDENTIAL_TTL = parseInt(process.env.TURN_CREDENTIAL_TTL, 10) || 86400;
+// TURNS_PORT: if set, a turns: (TURN-over-TLS) URL is added to ICE candidates,
+// allowing WebRTC to traverse corporate firewalls that block non-HTTPS ports.
+const TURNS_PORT = process.env.TURNS_PORT || '';
 
 /**
  * Debug logging helper - only logs when DEV=1
@@ -338,12 +341,14 @@ app.get('/api/config', (req, res) => {
         iceServers.push({
             urls: [
                 `turn:${TURN_SERVER}?transport=udp`,
-                `turn:${TURN_SERVER}?transport=tcp`
+                `turn:${TURN_SERVER}?transport=tcp`,
+                // TURNS (TURN-over-TLS) on a separate port, for networks blocking non-443/non-HTTPS traffic
+                ...(TURNS_PORT ? [`turns:${TURN_SERVER.replace(/:\d+$/, ':' + TURNS_PORT)}?transport=tcp`] : [])
             ],
             username,
             credential
         });
-        debugLog('CONFIG', `Using TURN server: ${TURN_SERVER}`, {
+        debugLog('CONFIG', `Using TURN server: ${TURN_SERVER}${TURNS_PORT ? ` (TURNS on port ${TURNS_PORT})` : ''}`, {
             credentialTTL: TURN_CREDENTIAL_TTL,
             username
         });
