@@ -82,10 +82,9 @@ services:
   #     # NOTE: DOMAIN must be an IP address here, NOT a hostname — coturn does not
   #     # resolve DNS for --external-ip. Set a separate TURN_EXTERNAL_IP env var if
   #     # your DOMAIN is a hostname.
-  #     --external-ip=${TURN_EXTERNAL_IP:-${DOMAIN:-127.0.0.1}}/0.0.0.0
+  #     --external-ip=${TURN_EXTERNAL_IP:-${DOMAIN:-127.0.0.1}}
   #     # Explicitly bind relay sockets to all interfaces so packets actually leave
   #     # the container (without this, coturn may silently fail to relay in Docker).
-  #     --relay-ip=0.0.0.0
   #     --no-stun
   #     --check-origin-consistency
   #     --cpus=1
