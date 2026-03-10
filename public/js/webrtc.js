@@ -144,6 +144,11 @@ class ImageSecureSendRTC {
             }
             if (state === 'connected') {
                 logger.success('Peer connection established!');
+                // Cancel any pending disconnect grace timer (recovery from transient "disconnected")
+                if (this._disconnectTimer) {
+                    clearTimeout(this._disconnectTimer);
+                    this._disconnectTimer = null;
+                }
                 this.stopIceCandidatePolling();
                 if (this.onConnected) this.onConnected();
                 this.detectConnectionType();
@@ -152,8 +157,17 @@ class ImageSecureSendRTC {
                 this._logConnectionFailure();
                 if (this.onDisconnected) this.onDisconnected();
             } else if (state === 'disconnected') {
-                logger.warn('Peer connection disconnected (may recover)');
-                if (this.onDisconnected) this.onDisconnected();
+                // "disconnected" is often transient in WebRTC (ICE may recover).
+                // Wait a grace period before treating it as terminal, to avoid
+                // tearing down connections that could have self-healed.
+                logger.warn('Peer connection disconnected — waiting 5s for recovery...');
+                this._disconnectTimer = setTimeout(() => {
+                    if (this.pc && this.pc.connectionState === 'disconnected') {
+                        logger.error('Peer connection did not recover after 5s');
+                        this._logConnectionFailure();
+                        if (this.onDisconnected) this.onDisconnected();
+                    }
+                }, 5000);
             }
         };
 
@@ -508,10 +522,10 @@ class ImageSecureSendRTC {
         await this.pc.setRemoteDescription(new RTCSessionDescription(offer));
         this.remoteDescriptionSet = true;
 
-        // Step 4: Fetch receiver's ICE candidates
+        // Step 4: Fetch receiver's ICE candidates (polling + timeout deferred to after step 6,
+        // so the 15s connection timeout doesn't include answer creation and ICE gathering time)
         logger.info('[Step 4/6] Fetching receiver\'s ICE candidates...');
         await this.fetchRemoteIceCandidates('offer');
-        this.startIceCandidatePolling('offer');
 
         // Step 5: Create and send SDP answer
         logger.info('[Step 5/6] Creating connection answer...');
@@ -539,6 +553,10 @@ class ImageSecureSendRTC {
         }
 
         logger.success('[Step 6/6] Answer sent — establishing peer connection...');
+
+        // Start candidate polling and connection timeout now that both sides have exchanged SDPs.
+        // Previously this was at step 4, wasting ~6-7s of the timeout budget on local setup.
+        this.startIceCandidatePolling('offer');
     }
 
     /**
