@@ -136,6 +136,32 @@ All configuration is done via environment variables in `docker/.env` (see `docke
 | `TURN_CREDENTIAL_TTL` | TURN credential validity in seconds | `86400` (24h) |
 | `TURNS_PORT` | TURN-over-TLS (TURNS) port; enables `turns:` ICE candidates | _(empty -- TURNS disabled)_ |
 
+## Firewall (UFW)
+
+If you use UFW, you need to open the ports used by coturn. Note that Docker bypasses UFW's iptables rules by default, so standard `ufw allow` commands won't work for containers.
+
+It is recommended to use [ufw-docker](https://github.com/chaifeng/ufw-docker) which manages UFW rules that actually apply to Docker containers.
+
+```bash
+# TURN listening port (UDP + TCP)
+sudo ufw-docker allow coturn 3478/udp
+sudo ufw-docker allow coturn 3478/tcp
+
+# TURNS (TURN-over-TLS) -- only if you enabled TURNS
+sudo ufw-docker allow coturn 8443/tcp
+
+# TURN relay ports -- ufw-docker does not support port ranges,
+# so each port in the relay range must be allowed individually.
+# Adjust to match --min-port / --max-port in your coturn config.
+sudo ufw-docker allow coturn 49152/udp
+sudo ufw-docker allow coturn 49153/udp
+sudo ufw-docker allow coturn 49154/udp
+sudo ufw-docker allow coturn 49155/udp
+sudo ufw-docker allow coturn 49156/udp
+```
+
+> **Note**: Replace `coturn` with your actual container name (e.g., `docker-coturn-1`) if it differs. Check with `docker ps`.
+
 ## Troubleshooting
 
 - **Camera not working**: make sure you're using HTTPS. Browsers require a secure context for camera access. Set up [Caddy](https://caddyserver.com/) or another reverse proxy for automatic HTTPS.

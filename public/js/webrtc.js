@@ -809,13 +809,13 @@ class ImageSecureSendRTC {
 
             if (localType === 'relay' || remoteType === 'relay') {
                 connectionType = 'relay';
-                connectionDetails = 'Relayed via TURN server';
+                connectionDetails = i18n.t('connection.relayDetails');
             } else if (localType === 'host' && remoteType === 'host') {
                 connectionType = 'direct-local';
-                connectionDetails = 'Direct (local network)';
+                connectionDetails = i18n.t('connection.directLocalDetails');
             } else {
                 connectionType = 'direct-p2p';
-                connectionDetails = 'Direct P2P (via STUN)';
+                connectionDetails = i18n.t('connection.directP2PDetails');
             }
 
             logger.info(`Connection type: ${connectionDetails} (local: ${localType}, remote: ${remoteType})`);

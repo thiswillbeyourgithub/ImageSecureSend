@@ -137,6 +137,9 @@ const i18n = (function() {
             // Connection types
             'connection.relay': '🔄 {details}',
             'connection.direct': '⚡ {details}',
+            'connection.relayDetails': 'Relayed via TURN server',
+            'connection.directLocalDetails': 'Direct (local network)',
+            'connection.directP2PDetails': 'Direct P2P (via STUN)',
 
             // Errors
             'error.noPhotoOrKey': 'No photo or key exchange not complete',
@@ -266,6 +269,9 @@ const i18n = (function() {
             // Connection types
             'connection.relay': '🔄 {details}',
             'connection.direct': '⚡ {details}',
+            'connection.relayDetails': 'Relayé via le serveur TURN',
+            'connection.directLocalDetails': 'Direct (réseau local)',
+            'connection.directP2PDetails': 'Direct P2P (via STUN)',
 
             // Errors
             'error.noPhotoOrKey': 'Pas de photo ou échange de clés incomplet',

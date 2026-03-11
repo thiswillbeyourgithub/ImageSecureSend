@@ -57,8 +57,8 @@ services:
   #   image: coturn/coturn:latest
   #   ports:
   #     # Use a different port if 3478 is already in use (e.g., by another coturn)
-  #     - "3479:3479/udp"
-  #     - "3479:3479/tcp"
+  #     - "3478:3478/udp"
+  #     - "3478:3478/tcp"
   #     - "49152-49156:49152-49156/udp"
   #   command: >
   #     -n
@@ -71,18 +71,18 @@ services:
   #     --no-dtls
   #     --no-tls
   #     # To enable TURNS (TURN-over-TLS), remove --no-tls above and add:
-  #     # --tls-listening-port=${TURNS_PORT:-5349}
+  #     # --tls-listening-port=${TURNS_PORT:-8443}
   #     # --cert=/etc/coturn/certs/cert.pem
   #     # --pkey=/etc/coturn/certs/key.pem
   #     # Then mount the certificate files via a volume:
   #     # volumes:
   #     #   - /path/to/certs:/etc/coturn/certs:ro
   #     # And expose the TURNS port:
-  #     #   - "${TURNS_PORT:-5349}:${TURNS_PORT:-5349}/tcp"
+  #     #   - "${TURNS_PORT:-8443}:${TURNS_PORT:-8443}/tcp"
   #     --realm=imagesecuresend
   #     --min-port=49152
   #     --max-port=49156
-  #     --listening-port=3479
+  #     --listening-port=3478
   #     # Docker NAT: format is --external-ip=PUBLIC_IP/INTERNAL_IP.
   #     # 0.0.0.0 as internal means "all container interfaces" (correct for Docker).
   #     # NOTE: DOMAIN must be an IP address here, NOT a hostname — coturn does not
