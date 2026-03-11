@@ -159,6 +159,11 @@ sudo ufw-docker allow coturn 49153/udp
 sudo ufw-docker allow coturn 49154/udp
 sudo ufw-docker allow coturn 49155/udp
 sudo ufw-docker allow coturn 49156/udp
+sudo ufw-docker allow coturn 49157/udp
+sudo ufw-docker allow coturn 49158/udp
+sudo ufw-docker allow coturn 49159/udp
+sudo ufw-docker allow coturn 49160/udp
+sudo ufw-docker allow coturn 49161/udp
 ```
 
 > **Note**: Replace `coturn` with your actual container name (e.g., `docker-coturn-1`) if it differs. Check with `docker ps`.

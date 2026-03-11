@@ -59,7 +59,7 @@ services:
   #     # Use a different port if 3478 is already in use (e.g., by another coturn)
   #     - "3478:3478/udp"
   #     - "3478:3478/tcp"
-  #     - "49152-49156:49152-49156/udp"
+  #     - "49152-49161:49152-49161/udp"
   #   command: >
   #     -n
   #     --log-file=stdout
@@ -86,7 +86,7 @@ services:
   #     #   - "${TURNS_PORT:-8443}:${TURNS_PORT:-8443}/tcp"
   #     --realm=imagesecuresend
   #     --min-port=49152
-  #     --max-port=49156
+  #     --max-port=49161
   #     --listening-port=3478
   #     # Docker NAT: format is --external-ip=PUBLIC_IP/INTERNAL_IP.
   #     # 0.0.0.0 as internal means "all container interfaces" (correct for Docker).
