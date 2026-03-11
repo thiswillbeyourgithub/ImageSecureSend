@@ -48,10 +48,20 @@ services:
       retries: 3
       start_period: 10s
 
-  # TURN relay server for when direct P2P fails (symmetric NAT, etc.)
-  # Uses time-based credentials with shared secret (see env.example for TURN_SECRET).
-  # If you already have a coturn instance (e.g., for Nextcloud), you can reuse it
-  # by setting TURN_SERVER and TURN_SECRET in your env file instead.
+  # ── coturn TURN relay server ──────────────────────────────────────────
+  # This project ships with a bundled coturn (https://github.com/coturn/coturn)
+  # service, pre-configured to work out of the box with ImageSecureSend.
+  # coturn acts as a TURN relay for when direct peer-to-peer WebRTC fails
+  # (e.g. symmetric NAT, restrictive firewalls, carrier-grade NAT).
+  #
+  # To use it, you MUST set TURN_SERVER and TURN_SECRET in your .env file
+  # (see env.example). Without these, the app will still work but only
+  # when direct P2P connections succeed.
+  #
+  # If you already have a coturn instance (e.g., for Nextcloud Talk), you can
+  # skip this service entirely and point TURN_SERVER / TURN_SECRET to your
+  # existing server instead.
+  # ─────────────────────────────────────────────────────────────────────
   coturn:
     image: coturn/coturn:latest
     container_name: coturn

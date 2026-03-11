@@ -31,13 +31,14 @@ const i18n = (function() {
 
             // About modal
             'about.title': 'About ImageSecureSend',
-            'about.description': 'A secure, end-to-end encrypted photo transfer app designed for environments where data privacy is paramount.',
+            'about.description': 'A secure, end-to-end encrypted photo transfer app designed for environments where data privacy is paramount. Photos never leave your device unencrypted.',
             'about.techStack': 'Tech Stack',
             'about.techStack.frontend': 'Vanilla HTML, CSS, JavaScript (no frameworks)',
             'about.techStack.transport': 'WebRTC peer-to-peer data channels',
             'about.techStack.encryption': 'ECDH key exchange + AES-GCM (Web Crypto API)',
             'about.techStack.signaling': 'Express.js server (SDP relay only)',
             'about.techStack.qr': 'qrcode.js / jsQR',
+            'about.techStack.turn': 'coturn (fallback when direct P2P fails)',
             'about.security': 'Security',
             'about.security.1': 'Photos are encrypted before leaving your device',
             'about.security.2': 'The server only relays connection metadata (SDP)',
@@ -47,7 +48,7 @@ const i18n = (function() {
             'about.credits.text': 'Built with',
             'about.credits.link': 'Claude Code',
             'about.credits.suffix': '(AI-assisted development).',
-            'about.credits.repo': 'Source code on GitHub',
+            'about.credits.repo': 'Source code on GitHub (AGPLv3)',
 
             // Send page
             'send.title': 'Send Photos',
@@ -178,13 +179,14 @@ const i18n = (function() {
 
             // About modal
             'about.title': 'À propos de ImageSecureSend',
-            'about.description': 'Une application de transfert de photos sécurisée, chiffrée de bout en bout, conçue pour les environnements médicaux où la confidentialité des données des patients est primordiale.',
+            'about.description': 'Une application de transfert de photos sécurisée, chiffrée de bout en bout, conçue pour les environnements où la confidentialité des données est primordiale. Les photos ne quittent jamais votre appareil sans être chiffrées.',
             'about.techStack': 'Technologies',
             'about.techStack.frontend': 'HTML, CSS, JavaScript pur (sans framework)',
             'about.techStack.transport': 'Canaux de données WebRTC pair-à-pair',
             'about.techStack.encryption': 'Échange de clés ECDH + AES-GCM (Web Crypto API)',
             'about.techStack.signaling': 'Serveur Express.js (relais SDP uniquement)',
             'about.techStack.qr': 'qrcode.js / jsQR',
+            'about.techStack.turn': 'coturn (relais quand le P2P direct échoue)',
             'about.security': 'Sécurité',
             'about.security.1': 'Les photos sont chiffrées avant de quitter votre appareil',
             'about.security.2': 'Le serveur ne relaie que les métadonnées de connexion (SDP)',
@@ -194,7 +196,7 @@ const i18n = (function() {
             'about.credits.text': 'Développé avec',
             'about.credits.link': 'Claude Code',
             'about.credits.suffix': '(développement assisté par IA).',
-            'about.credits.repo': 'Code source sur GitHub',
+            'about.credits.repo': 'Code source sur GitHub (AGPLv3)',
 
             // Send page
             'send.title': 'Envoyer des Photos',
