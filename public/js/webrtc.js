@@ -101,7 +101,10 @@ class ImageSecureSendRTC {
             iceTransportPolicy: this.iceTransportPolicy
         });
 
-        // Track ICE candidates and send to server
+        // Send trickle ICE candidates to server as a best-effort optimization.
+        // These are redundant with the candidates already embedded in the SDP
+        // (both sides call waitForICE() before storing their SDP offer/answer),
+        // so lost POSTs or timing gaps in polling are harmless.
         this.pc.onicecandidate = (event) => {
             if (event.candidate) {
                 const candidateInfo = event.candidate.type || 'unknown';
@@ -522,8 +525,11 @@ class ImageSecureSendRTC {
         await this.pc.setRemoteDescription(new RTCSessionDescription(offer));
         this.remoteDescriptionSet = true;
 
-        // Step 4: Fetch receiver's ICE candidates (polling + timeout deferred to after step 6,
-        // so the 15s connection timeout doesn't include answer creation and ICE gathering time)
+        // Step 4: Fetch receiver's trickle ICE candidates. Polling is deferred to after
+        // step 6 so the connection timeout doesn't include answer creation time.
+        // Note: the gap between this one-shot fetch and the deferred polling is harmless
+        // because the receiver's candidates are already embedded in the SDP offer
+        // (the receiver calls waitForICE() before storing its offer).
         logger.info('[Step 4/6] Fetching receiver\'s ICE candidates...');
         await this.fetchRemoteIceCandidates('offer');
 
