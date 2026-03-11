@@ -19,3 +19,4 @@ docker/.env
 .aider.*
 
 deploy.sh
+TODO.md
