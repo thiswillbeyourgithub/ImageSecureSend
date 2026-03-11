@@ -148,7 +148,7 @@
     <script src="/js/i18n.js"></script>
     <script src="/js/logger.js" integrity="sha384-Dv8VkT+ccVxNWxcrtj/Gtb2CUOFMQvEOGHBXThiJ1NLy/yjub0dHtFegJVcZaKEd"></script>
     <script src="/js/crypto.js" integrity="sha384-fNGfKN+6FZ5Q+O6t5r3jiX7dqukFAEFnLX4qyvWtF6VkvWzKGa7yIrgUiQJu2Apq"></script>
-    <script src="/js/webrtc.js" integrity="sha384-6decCIJXb6trA/HFD12iag9vrQtubnwLomqa3gmgd217P5wxhZdsKbpJoOO77ZNu"></script>
+    <script src="/js/webrtc.js" integrity="sha384-6LVh3QhUzBgDqk1UZ8FT/65inTEXNuw0TdlM0rfBgBU+z4ws5lRT1JjeA6qNVLDx"></script>
     <script>
         // Initialize i18n first
         i18n.init();
@@ -356,6 +356,36 @@
         }
 
         /**
+         * Clean up all sensitive data: revoke object URLs, clear image data,
+         * and close the WebRTC connection. Called on page unload and can be
+         * called manually for a full cleanup.
+         */
+        function cleanupAllData() {
+            // Revoke all object URLs from displayed images
+            document.querySelectorAll('.received-image-item img').forEach(img => {
+                if (img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+            });
+            document.querySelectorAll('.received-image-item a[id^="download-"]').forEach(a => {
+                if (a.href.startsWith('blob:')) URL.revokeObjectURL(a.href);
+            });
+            // Clear image data from memory
+            for (let i = 0; i < receivedImages.length; i++) {
+                receivedImages[i] = null;
+            }
+            receivedImages = [];
+            // Close WebRTC connection
+            if (rtc) {
+                rtc.receiveBuffer = [];
+                rtc.close();
+            }
+            // Clear crypto keys
+            keyPair = null;
+            sharedKey = null;
+        }
+
+        window.addEventListener('beforeunload', cleanupAllData);
+
+        /**
          * Display a badge showing whether the connection is direct (P2P) or relayed (TURN).
          * Relay connections work fine (data is E2E encrypted anyway) but direct is faster.
          */
@@ -551,8 +581,20 @@
          */
         function doDiscard(imageIndex) {
             logger.info(`Discarding image ${imageIndex}`);
-            receivedImages[imageIndex] = null;
+            // Revoke object URLs to free memory
             const card = document.querySelector(`[data-image-index="${imageIndex}"]`);
+            const img = card.querySelector('img');
+            if (img && img.src.startsWith('blob:')) {
+                URL.revokeObjectURL(img.src);
+            }
+            const downloadLink = card.querySelector(`#download-${imageIndex}`);
+            if (downloadLink && downloadLink.href.startsWith('blob:')) {
+                // Only revoke if different from img src (after crop they may differ)
+                if (!img || downloadLink.href !== img.src) {
+                    URL.revokeObjectURL(downloadLink.href);
+                }
+            }
+            receivedImages[imageIndex] = null;
             card.remove();
             updatePdfButton();
             logger.success(`Image ${imageIndex} discarded`);
@@ -1094,10 +1136,20 @@
                     name: imgData.name
                 };
 
-                // Update the displayed image
+                // Update the displayed image, revoking old object URLs
+                const imgEl = document.getElementById(`img-${cropState.imageIndex}`);
+                const dlEl = document.getElementById(`download-${cropState.imageIndex}`);
+                if (imgEl.src.startsWith('blob:')) {
+                    const oldImgUrl = imgEl.src;
+                    const oldDlUrl = dlEl.href;
+                    URL.revokeObjectURL(oldImgUrl);
+                    if (oldDlUrl !== oldImgUrl && oldDlUrl.startsWith('blob:')) {
+                        URL.revokeObjectURL(oldDlUrl);
+                    }
+                }
                 const newUrl = URL.createObjectURL(resultBlob);
-                document.getElementById(`img-${cropState.imageIndex}`).src = newUrl;
-                document.getElementById(`download-${cropState.imageIndex}`).href = newUrl;
+                imgEl.src = newUrl;
+                dlEl.href = newUrl;
 
                 logger.success(`Cropped image: ${dstW}x${dstH}px`);
                 closeCropModal();

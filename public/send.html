@@ -193,7 +193,7 @@
     <script src="/js/i18n.js"></script>
     <script src="/js/logger.js" integrity="sha384-Dv8VkT+ccVxNWxcrtj/Gtb2CUOFMQvEOGHBXThiJ1NLy/yjub0dHtFegJVcZaKEd"></script>
     <script src="/js/crypto.js" integrity="sha384-fNGfKN+6FZ5Q+O6t5r3jiX7dqukFAEFnLX4qyvWtF6VkvWzKGa7yIrgUiQJu2Apq"></script>
-    <script src="/js/webrtc.js" integrity="sha384-6decCIJXb6trA/HFD12iag9vrQtubnwLomqa3gmgd217P5wxhZdsKbpJoOO77ZNu"></script>
+    <script src="/js/webrtc.js" integrity="sha384-6LVh3QhUzBgDqk1UZ8FT/65inTEXNuw0TdlM0rfBgBU+z4ws5lRT1JjeA6qNVLDx"></script>
     <script>
         // Initialize i18n first
         i18n.init();
@@ -520,6 +520,38 @@
             showToast(i18n.t('send.disconnected'), { duration: 5000 });
         }
 
+        /**
+         * Clean up all sensitive data on page unload: clear photo blob,
+         * revoke object URLs, stop camera streams, close WebRTC.
+         */
+        function cleanupAllData() {
+            currentPhotoBlob = null;
+            // Revoke preview image URL
+            const preview = document.getElementById('preview-image');
+            if (preview && preview.src && preview.src.startsWith('blob:')) {
+                URL.revokeObjectURL(preview.src);
+            }
+            // Stop camera streams
+            if (scannerStream) {
+                scannerStream.getTracks().forEach(t => t.stop());
+                scannerStream = null;
+            }
+            if (captureStream) {
+                captureStream.getTracks().forEach(t => t.stop());
+                captureStream = null;
+            }
+            // Close WebRTC connection and clear buffers
+            if (rtc) {
+                rtc.receiveBuffer = [];
+                rtc.close();
+            }
+            // Clear crypto keys
+            keyPair = null;
+            sharedKey = null;
+        }
+
+        window.addEventListener('beforeunload', cleanupAllData);
+
         /** Display a badge showing whether the connection is direct (P2P) or relayed (TURN) */
         function onConnectionTypeDetected(info) {
             const badge = document.getElementById('connection-type-badge');
@@ -747,6 +779,10 @@
         /** Display the captured/selected photo in the preview step and reset send UI */
         function showPreview(blob) {
             const preview = document.getElementById('preview-image');
+            // Revoke previous preview URL if any
+            if (preview.src && preview.src.startsWith('blob:')) {
+                URL.revokeObjectURL(preview.src);
+            }
             preview.src = URL.createObjectURL(blob);
             showStep(stepPreview);
 
@@ -800,6 +836,13 @@
                 });
 
                 logger.success('Photo sent successfully!');
+                // Clear sent photo data from memory
+                currentPhotoBlob = null;
+                const preview = document.getElementById('preview-image');
+                if (preview.src && preview.src.startsWith('blob:')) {
+                    URL.revokeObjectURL(preview.src);
+                    preview.src = '';
+                }
                 showStep(stepSent);
 
             } catch (e) {

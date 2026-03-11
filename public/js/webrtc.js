@@ -845,6 +845,12 @@ class ImageSecureSendRTC {
      */
     close() {
         this.stopIceCandidatePolling();
+        // Clear any in-progress receive buffers
+        this.receiveBuffer = [];
+        this.receivedSize = 0;
+        this.expectedSize = 0;
+        this.currentFileMetadata = null;
+        this.pendingIceCandidates = [];
         if (this.dataChannel) {
             this.dataChannel.close();
         }
