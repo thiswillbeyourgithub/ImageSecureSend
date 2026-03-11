@@ -655,7 +655,7 @@
                 currentPhotoBlob = blob;
                 stopCapture();
                 showPreview(blob);
-            }, 'image/jpeg', 0.95);
+            }, 'image/png');
         }
 
         /** Handle file picker selection - validate it's an image, strip metadata, then show preview */
@@ -679,7 +679,7 @@
                 const stripped = await stripImageMetadata(rawData, file.type);
 
                 // Build a new Blob preserving the original filename (used as metadata in sendPhoto)
-                currentPhotoBlob = new File([stripped.data], file.name.replace(/\.[^.]+$/, '.jpg'), {
+                currentPhotoBlob = new File([stripped.data], file.name.replace(/\.[^.]+$/, '.png'), {
                     type: stripped.mimeType
                 });
                 logger.success(`Metadata stripped: ${file.size} → ${currentPhotoBlob.size} bytes`);
@@ -730,9 +730,9 @@
                             return;
                         }
                         strippedBlob.arrayBuffer().then(buf => {
-                            resolve({ data: new Uint8Array(buf), mimeType: 'image/jpeg' });
+                            resolve({ data: new Uint8Array(buf), mimeType: 'image/png' });
                         }).catch(reject);
-                    }, 'image/jpeg', 0.95);
+                    }, 'image/png');
                 };
 
                 img.onerror = () => {
@@ -779,8 +779,8 @@
                 document.getElementById('send-status').textContent = i18n.t('send.encrypting');
 
                 // Determine filename - use original if from file picker, otherwise generate
-                const filename = currentPhotoBlob.name || `photo_${Date.now()}.jpg`;
-                const mimeType = currentPhotoBlob.type || 'image/jpeg';
+                const filename = currentPhotoBlob.name || `photo_${Date.now()}.png`;
+                const mimeType = currentPhotoBlob.type || 'image/png';
 
                 const encryptedData = await ImageSecureSendCrypto.encryptWithMetadata(
                     photoData,
