@@ -34,7 +34,9 @@ ImageSecureSend/
     │                       #   camera capture or file picker, encryption, chunked sending
     ├── manifest.json       # PWA manifest (installable as app on mobile)
     ├── service-worker.js   # PWA service worker: caches static assets for fast reload
-    │                       #   (stale-while-revalidate strategy; API calls bypass cache)
+    │                       #   (stale-while-revalidate strategy; API calls bypass cache).
+    │                       #   CACHE_NAME is timestamped by update-sri.js on each deploy,
+    │                       #   triggering auto-reload via controllerchange in the clients
     │
     ├── css/
     │   └── style.css       # All styles: dark theme, large touch targets for accessibility,
@@ -125,22 +127,36 @@ Room endpoints require an `X-Room-Secret` header (constant-time comparison).
 ## Security Layers
 
 1. **End-to-end encryption**: ECDH P-256 key exchange + HKDF + AES-GCM-256. Server never
-   sees keys or plaintext.
-2. **Room secrets**: 16-byte random token required for any room access. Passed in URL hash
-   fragment (never sent to server in HTTP requests). Prevents room enumeration.
-3. **Fingerprint verification**: Both parties see short hex fingerprints of each other's
+   sees keys or plaintext. Fresh ephemeral key pairs per session provide forward secrecy.
+2. **Zero server trust**: The server is a signaling relay only — it never sees encryption
+   keys, plaintext photos, or file metadata. Rooms are ephemeral (10-minute TTL, in-memory).
+3. **Room secrets**: 16-byte random token required for any room access. Passed in URL hash
+   fragment (never sent to server in HTTP requests). Constant-time comparison prevents
+   timing attacks. Prevents room enumeration even if the short room ID is guessed.
+4. **Fingerprint verification**: Both parties see short hex fingerprints of each other's
    public keys and must manually confirm they match, defeating MITM attacks.
-4. **Size obfuscation**: Photos are padded to power-of-2 bucket sizes before encryption,
-   hiding exact file sizes from network observers.
-5. **Metadata encryption**: Filename, MIME type, and original size are encrypted inside the
+5. **Size obfuscation**: Photos are padded to power-of-2 bucket sizes before encryption,
+   hiding exact file sizes from network observers. Padding uses random bytes to prevent
+   compression-based attacks.
+6. **Metadata encryption**: Filename, MIME type, and original size are encrypted inside the
    payload, not sent in plaintext over the data channel.
-6. **Rate limiting**: Per-IP sliding window limits on room creation (5/min), room lookup
-   (30/min), and general API (100/min).
-7. **Origin validation**: API rejects requests from unauthorized origins (CSRF protection).
-8. **Proxy trust**: Express trusts `X-Forwarded-For` only from loopback (Caddy).
-9. **Docker hardening**: Read-only filesystem, no-new-privileges, all capabilities dropped,
-   non-root user, memory/CPU limits.
-10. **SRI**: Script and stylesheet tags use `integrity` attributes (Subresource Integrity).
+7. **No phone storage**: Photos are captured directly in the browser and stay in memory only —
+   never written to the phone's gallery, filesystem, or local storage.
+8. **Supply chain attack resistance**: No frameworks, bundlers, or build tools — the frontend
+   is vanilla HTML/CSS/JS with zero `node_modules` in the browser. The only third-party
+   client-side libraries (jsQR, qrcode.js) are vendored directly in the repository. The
+   server-side dependency footprint is minimal (Express.js only).
+9. **SRI**: All `<script>` and `<link>` tags use `integrity` attributes (Subresource
+   Integrity), ensuring even a compromised server cannot silently swap in tampered files.
+10. **Rate limiting**: Per-IP sliding window limits on room creation (5/min), room lookup
+    (30/min), and general API (100/min).
+11. **Origin validation**: API rejects requests from unauthorized origins (CSRF protection).
+12. **Proxy trust**: Express trusts `X-Forwarded-For` only from loopback (Caddy).
+13. **Docker hardening**: Read-only filesystem, no-new-privileges, all capabilities dropped,
+    non-root user, memory/CPU limits.
+14. **TURN relay security**: Time-based HMAC-SHA1 credentials with configurable TTL. Even
+    when relayed through TURN, photos remain end-to-end encrypted — the TURN server only
+    sees encrypted blobs.
 
 ## Deployment
 
