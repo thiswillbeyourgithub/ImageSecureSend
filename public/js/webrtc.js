@@ -30,6 +30,14 @@ class ImageSecureSendRTC {
         this.pendingIceCandidates = [];
         this.remoteDescriptionSet = false;
 
+        // Transfer acknowledgment state — sendFile() returns a Promise that
+        // resolves only when the receiver sends file-ack (or rejects on file-nack/timeout).
+        // This ensures the sender knows the receiver successfully decrypted the data.
+        this._fileAckResolve = null;
+        this._fileAckReject = null;
+        this._fileAckTimeout = null;
+        this._FILE_ACK_TIMEOUT_MS = 30000; // 30s timeout for receiver to ack
+
         // ICE candidate polling state
         // After the initial fetch of remote candidates, we poll for newly trickled
         // candidates until the connection succeeds or fails. This is needed because
@@ -267,6 +275,24 @@ class ImageSecureSendRTC {
                     }
                     this.receiveBuffer = [];
                     this.receivedSize = 0;
+                } else if (msg.type === 'file-ack') {
+                    // Receiver confirmed successful decryption with their computed hash
+                    logger.info(`Received file-ack with SHA-256: ${msg.sha256}`);
+                    if (this._fileAckResolve) {
+                        clearTimeout(this._fileAckTimeout);
+                        this._fileAckResolve({ acknowledged: true, sha256: msg.sha256 });
+                        this._fileAckResolve = null;
+                        this._fileAckReject = null;
+                    }
+                } else if (msg.type === 'file-nack') {
+                    // Receiver reported decryption failure
+                    logger.error(`Received file-nack: ${msg.error}`);
+                    if (this._fileAckReject) {
+                        clearTimeout(this._fileAckTimeout);
+                        this._fileAckReject(new Error(`Receiver decryption failed: ${msg.error}`));
+                        this._fileAckResolve = null;
+                        this._fileAckReject = null;
+                    }
                 } else {
                     if (this.onMessage) {
                         this.onMessage(msg);
@@ -349,8 +375,22 @@ class ImageSecureSendRTC {
         }
 
         this.sendMessage({ type: 'file-end' });
-        logger.success('Encrypted file sent successfully');
-        return true;
+        logger.info('All chunks sent, waiting for receiver acknowledgment...');
+
+        // Wait for file-ack / file-nack from receiver, or timeout.
+        // This ensures the sender only sees "success" after the receiver
+        // has confirmed successful decryption with a matching checksum.
+        return new Promise((resolve, reject) => {
+            this._fileAckResolve = resolve;
+            this._fileAckReject = reject;
+            this._fileAckTimeout = setTimeout(() => {
+                if (this._fileAckReject) {
+                    this._fileAckReject(new Error('Transfer acknowledgment timeout — no confirmation from receiver after 30s'));
+                    this._fileAckResolve = null;
+                    this._fileAckReject = null;
+                }
+            }, this._FILE_ACK_TIMEOUT_MS);
+        });
     }
 
     // ============ Server-based Signaling ============

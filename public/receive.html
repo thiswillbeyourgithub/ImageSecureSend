@@ -178,8 +178,8 @@
 
     <script src="/js/i18n.js"></script>
     <script src="/js/logger.js" integrity="sha384-zPT2T91QHba565vXwJxab95C1QnsZqMlJGqu2r6if1pP7NvTSfqNmCXXGTG/Qwff"></script>
-    <script src="/js/crypto.js" integrity="sha384-r5sHmJyAdRtgYaEnTUr4/yo4TuM3Bam1ocszzxay+s7Ej70ksSo/WWZCyclKreOL"></script>
-    <script src="/js/webrtc.js" integrity="sha384-6LVh3QhUzBgDqk1UZ8FT/65inTEXNuw0TdlM0rfBgBU+z4ws5lRT1JjeA6qNVLDx"></script>
+    <script src="/js/crypto.js" integrity="sha384-fxPfXXvATL9DIrjaHRPHbdHxpISVPd62+fnV2L2usS1mpDcr6zTw1AkDcm8wa3VJ"></script>
+    <script src="/js/webrtc.js" integrity="sha384-/LVKiBYFhURz7cslegAXPi4Z+/XFo41ufAnPXLSf/73hX3x2j0TaveJ7kVxuD8zi"></script>
     <script>
         // Initialize i18n first
         i18n.init();
@@ -541,9 +541,18 @@
 
                     updatePdfButton();
 
-                    logger.success('Photo decrypted and displayed');
+                    // Compute SHA-256 of the decrypted plaintext data and send
+                    // file-ack back to the sender for end-to-end integrity verification.
+                    // The sender compares this hash against its pre-encryption hash.
+                    const decryptedHash = await ImageSecureSendCrypto.sha256Hex(data);
+                    logger.info(`Decrypted SHA-256: ${decryptedHash}`);
+                    rtc.sendMessage({ type: 'file-ack', sha256: decryptedHash });
+                    logger.success('Photo decrypted, displayed, and ack sent');
                 } catch (e) {
                     logger.error('Failed to decrypt photo: ' + e.message);
+                    // Send file-nack so the sender knows decryption failed
+                    // and can offer a retry instead of waiting for timeout
+                    rtc.sendMessage({ type: 'file-nack', error: e.message });
                 }
             }
         }

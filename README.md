@@ -59,9 +59,15 @@ This project was developed with AI assistance ([Claude Code](https://claude.ai/c
 - Encrypted payloads are **padded to fixed bucket sizes** (16 KB to 32 MB, power-of-2) to hide the exact file size from network observers
 - Padding uses **random bytes** (not zeros) to prevent compression-based attacks
 
+### Transfer Verification
+- After decryption, the receiver computes a **SHA-256 checksum** of the plaintext data and sends it back to the sender via a `file-ack` message
+- The sender compares this against its own pre-encryption hash to **verify end-to-end integrity** (encryption, transfer, and decryption all succeeded)
+- If verification fails or times out, the sender is notified and can **retry** without losing the photo
+
 ### No Phone Storage
 - Photos are captured directly in the browser (no camera app) and **stay in browser memory only**
 - Photos are never written to the phone's gallery, filesystem, or local storage
+- Photos are kept in memory until the receiver confirms successful receipt — only then are they cleared
 
 ### Docker Hardening
 - Runs as a **non-root user** (UID 1001)

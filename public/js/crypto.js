@@ -246,6 +246,24 @@ const ImageSecureSendCrypto = {
         return decryptedData;
     },
 
+    // ============ Hashing ============
+
+    /**
+     * Compute SHA-256 hash of an ArrayBuffer and return it as a hex string.
+     * Used for transfer acknowledgment: sender hashes plaintext before encryption,
+     * receiver hashes decrypted data, and both are compared to verify end-to-end
+     * integrity (encryption + transfer + decryption all succeeded).
+     *
+     * @param {ArrayBuffer} data - Data to hash
+     * @returns {Promise<string>} Lowercase hex string of SHA-256 hash
+     */
+    async sha256Hex(data) {
+        const hash = await crypto.subtle.digest('SHA-256', data);
+        return Array.from(new Uint8Array(hash))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+    },
+
     // ============ Utilities ============
 
     /**

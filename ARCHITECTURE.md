@@ -103,6 +103,11 @@ ImageSecureSend/
   ◀──────────────────────────────────── Encrypt photo (AES-GCM, padded)
                                         Send via data channel chunks
   16. Decrypt, display, offer download
+      Compute SHA-256 of decrypted data
+      Send file-ack {sha256} ─────────────────────────────────────────▶
+                                                                       17. Compare SHA-256 hashes
+                                                                           Match → "Verified!", clear photo
+                                                                           Mismatch → error, offer retry
 ```
 
 ## Server API Endpoints
@@ -143,19 +148,24 @@ Room endpoints require an `X-Room-Secret` header (constant-time comparison).
    compression-based attacks.
 6. **Metadata encryption**: Filename, MIME type, and original size are encrypted inside the
    payload, not sent in plaintext over the data channel.
-7. **No phone storage**: Photos are captured directly in the browser and stay in memory only —
-   never written to the phone's gallery, filesystem, or local storage.
-8. **Supply chain attack resistance**: No frameworks, bundlers, or build tools — the frontend
+7. **Transfer integrity verification**: After decryption, the receiver computes SHA-256 of the
+   plaintext data and sends it back via `file-ack`. The sender compares it against its own
+   pre-encryption hash to confirm end-to-end integrity. On mismatch or timeout, the sender
+   can retry without losing the photo.
+8. **No phone storage**: Photos are captured directly in the browser and stay in memory only —
+   never written to the phone's gallery, filesystem, or local storage. Photos are kept in
+   memory until the receiver confirms successful receipt.
+9. **Supply chain attack resistance**: No frameworks, bundlers, or build tools — the frontend
    is vanilla HTML/CSS/JS with zero `node_modules` in the browser. The only third-party
    client-side libraries (jsQR, qrcode.js) are vendored directly in the repository. The
    server-side dependency footprint is minimal (Express.js only).
-9. **SRI**: All `<script>` and `<link>` tags use `integrity` attributes (Subresource
+10. **SRI**: All `<script>` and `<link>` tags use `integrity` attributes (Subresource
    Integrity), ensuring even a compromised server cannot silently swap in tampered files.
-10. **Rate limiting**: Per-IP sliding window limits on room creation (5/min), room lookup
+11. **Rate limiting**: Per-IP sliding window limits on room creation (5/min), room lookup
     (30/min), and general API (100/min).
-11. **Origin validation**: API rejects requests from unauthorized origins (CSRF protection).
-12. **Proxy trust**: Express trusts `X-Forwarded-For` only from loopback (Caddy).
-13. **Docker hardening**: Read-only filesystem, no-new-privileges, all capabilities dropped,
+12. **Origin validation**: API rejects requests from unauthorized origins (CSRF protection).
+13. **Proxy trust**: Express trusts `X-Forwarded-For` only from loopback (Caddy).
+14. **Docker hardening**: Read-only filesystem, no-new-privileges, all capabilities dropped,
     non-root user, memory/CPU limits.
 14. **TURN relay security**: Time-based HMAC-SHA1 credentials with configurable TTL. Even
     when relayed through TURN, photos remain end-to-end encrypted — the TURN server only

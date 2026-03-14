@@ -1,10 +1,10 @@
 {
-  "/js/crypto.js": "sha384-r5sHmJyAdRtgYaEnTUr4/yo4TuM3Bam1ocszzxay+s7Ej70ksSo/WWZCyclKreOL",
-  "/js/i18n.js": "sha384-yHct/drQUTaw75c/nVcUVVYlEGKl7h5qtDB+XnQYmc3emdpH/wzJCZWLojZ+w5xS",
+  "/js/crypto.js": "sha384-fxPfXXvATL9DIrjaHRPHbdHxpISVPd62+fnV2L2usS1mpDcr6zTw1AkDcm8wa3VJ",
+  "/js/i18n.js": "sha384-kITMwM9MyHqNzIOjVAKOjoH5zLuBhlCjApBQmV39StfO3AoygOgU3/LX9FOaroO3",
   "/js/jsqr.min.js": "sha384-9Q0jWoineiIq95JeIyBsNV90KKLfDsbkj29k/YFxf76a2JwkHDYkMuSbNGN6XJfV",
   "/js/logger.js": "sha384-zPT2T91QHba565vXwJxab95C1QnsZqMlJGqu2r6if1pP7NvTSfqNmCXXGTG/Qwff",
   "/js/qrcode.min.js": "sha384-HGmnkDZJy7mRkoARekrrj0VjEFSh9a0Z8qxGri/kTTAJkgR8hqD1lHsYSh3JdzRi",
   "/js/sdp-compress.js": "sha384-auOBJVvuvjxQd/vALNCrI5lAC6RJmW20tZlwxrGz7iGrRufq+NoJNNmxxzrnmcgv",
-  "/js/webrtc.js": "sha384-6LVh3QhUzBgDqk1UZ8FT/65inTEXNuw0TdlM0rfBgBU+z4ws5lRT1JjeA6qNVLDx",
+  "/js/webrtc.js": "sha384-/LVKiBYFhURz7cslegAXPi4Z+/XFo41ufAnPXLSf/73hX3x2j0TaveJ7kVxuD8zi",
   "/css/style.css": "sha384-0z9Nf/oOqukWevG4zZD8KrFBcs9zqrKn9on37lwOuZLQc7CcMvRLhRYVn2dCkKtn"
 }

@@ -254,8 +254,8 @@
 
     <script src="/js/i18n.js"></script>
     <script src="/js/logger.js" integrity="sha384-zPT2T91QHba565vXwJxab95C1QnsZqMlJGqu2r6if1pP7NvTSfqNmCXXGTG/Qwff"></script>
-    <script src="/js/crypto.js" integrity="sha384-r5sHmJyAdRtgYaEnTUr4/yo4TuM3Bam1ocszzxay+s7Ej70ksSo/WWZCyclKreOL"></script>
-    <script src="/js/webrtc.js" integrity="sha384-6LVh3QhUzBgDqk1UZ8FT/65inTEXNuw0TdlM0rfBgBU+z4ws5lRT1JjeA6qNVLDx"></script>
+    <script src="/js/crypto.js" integrity="sha384-fxPfXXvATL9DIrjaHRPHbdHxpISVPd62+fnV2L2usS1mpDcr6zTw1AkDcm8wa3VJ"></script>
+    <script src="/js/webrtc.js" integrity="sha384-/LVKiBYFhURz7cslegAXPi4Z+/XFo41ufAnPXLSf/73hX3x2j0TaveJ7kVxuD8zi"></script>
     <script>
         // Initialize i18n first
         i18n.init();
@@ -895,6 +895,12 @@
                 const photoData = await currentPhotoBlob.arrayBuffer();
                 logger.info(`Photo size: ${photoData.byteLength} bytes`);
 
+                // Compute SHA-256 of raw plaintext data BEFORE encryption.
+                // This hash will be compared against the receiver's hash of the
+                // decrypted data to verify end-to-end integrity.
+                const localHash = await ImageSecureSendCrypto.sha256Hex(photoData);
+                logger.info(`Plaintext SHA-256: ${localHash}`);
+
                 // Encrypt with metadata bundled and padding applied.
                 // This hides: filename, MIME type, and exact file size.
                 // The encrypted output is padded to a bucket size.
@@ -919,23 +925,55 @@
                 document.getElementById('send-status').textContent = i18n.t('send.sendingProgress');
                 await rtc.sendFile(encryptedData, (percent) => {
                     document.getElementById('send-progress-fill').style.width = percent + '%';
+                    // Once all chunks are sent, show "awaiting confirmation" while
+                    // waiting for the receiver's file-ack (checksum verification).
+                    if (percent >= 100) {
+                        document.getElementById('send-status').textContent = i18n.t('send.awaitingConfirmation');
+                    }
                 });
 
-                logger.success('Photo sent successfully!');
-                // Clear sent photo data from memory
-                currentPhotoBlob = null;
-                const preview = document.getElementById('preview-image');
-                if (preview.src && preview.src.startsWith('blob:')) {
-                    URL.revokeObjectURL(preview.src);
-                    preview.src = '';
-                }
-                showStep(stepSent);
-
+                // sendFile() now waits — this point is only reached after file-ack/nack/timeout.
+                // The above line returns { acknowledged: true, sha256: '<hex>' } on success,
+                // or throws on nack/timeout. If we're here, we got an ack.
             } catch (e) {
+                // Distinguish timeout/nack from other errors (e.g. encryption failure).
+                // On timeout or nack, keep photo in memory so the user can retry.
                 logger.error('Failed to send photo: ' + e.message);
-                showToast(i18n.t('send.sendFailed'));
+                const isTimeout = e.message.includes('timeout');
+                const isNack = e.message.includes('Receiver decryption failed');
+                if (isTimeout) {
+                    showToast(i18n.t('send.transferTimeout'));
+                } else if (isNack) {
+                    showToast(i18n.t('send.checksumMismatch'));
+                } else {
+                    showToast(i18n.t('send.sendFailed'));
+                }
                 document.getElementById('send-btn').disabled = false;
+                document.getElementById('send-status').classList.add('hidden');
+                document.getElementById('send-progress-bar').classList.add('hidden');
+                // Do NOT clear currentPhotoBlob — user can retry
+                return;
             }
+
+            // If we reach here, sendFile() resolved with a file-ack.
+            // The ack object is not used directly since sendFile() would have
+            // thrown on nack/timeout. Success path:
+            logger.success('Photo sent and verified by receiver!');
+
+            // Clear sent photo data from memory — receiver confirmed receipt
+            currentPhotoBlob = null;
+            const preview = document.getElementById('preview-image');
+            if (preview.src && preview.src.startsWith('blob:')) {
+                URL.revokeObjectURL(preview.src);
+                preview.src = '';
+            }
+
+            // Update success message to show verification
+            const sentStatus = stepSent.querySelector('.status');
+            if (sentStatus) {
+                sentStatus.textContent = i18n.t('send.transferVerified');
+            }
+            showStep(stepSent);
         }
 
         // ============ Fingerprint Verification ============
