@@ -1,5 +1,5 @@
 /**
- * Logger module for ImageSecureSend
+ * Logger module for WebSend
  * Provides consistent logging with timestamps and log levels.
  * Logs are stored in memory and can be displayed in a UI panel.
  */

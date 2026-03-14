@@ -6,11 +6,11 @@
     <meta name="theme-color" content="#1565c0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ImageSecureSend">
-    <title>ImageSecureSend - Send Photos</title>
+    <meta name="apple-mobile-web-app-title" content="WebSend">
+    <title>WebSend - Send Photos</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
-    <link rel="stylesheet" href="/css/style.css" integrity="sha384-0z9Nf/oOqukWevG4zZD8KrFBcs9zqrKn9on37lwOuZLQc7CcMvRLhRYVn2dCkKtn" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css" integrity="sha384-zDDx57/PawPLBt9mBHNPuUvdEH9zWCGNXiRQ2jUT1pTEu/Zr5nKyh0AMxBxwhtk1" crossorigin="anonymous">
     <!-- QR Scanner library - lightweight (local copy to avoid CDN issues) -->
     <script src="/js/jsqr.min.js" integrity="sha384-9Q0jWoineiIq95JeIyBsNV90KKLfDsbkj29k/YFxf76a2JwkHDYkMuSbNGN6XJfV" crossorigin="anonymous"></script>
 </head>
@@ -253,9 +253,9 @@
     </div>
 
     <script src="/js/i18n.js"></script>
-    <script src="/js/logger.js" integrity="sha384-zPT2T91QHba565vXwJxab95C1QnsZqMlJGqu2r6if1pP7NvTSfqNmCXXGTG/Qwff"></script>
-    <script src="/js/crypto.js" integrity="sha384-fxPfXXvATL9DIrjaHRPHbdHxpISVPd62+fnV2L2usS1mpDcr6zTw1AkDcm8wa3VJ"></script>
-    <script src="/js/webrtc.js" integrity="sha384-/LVKiBYFhURz7cslegAXPi4Z+/XFo41ufAnPXLSf/73hX3x2j0TaveJ7kVxuD8zi"></script>
+    <script src="/js/logger.js" integrity="sha384-nBOWPHjrcPtwoIFqx8RKQiKeSaX7L0+apb4xg2Sg4Li46AAnkzyOpS7bJXy0XrYB"></script>
+    <script src="/js/crypto.js" integrity="sha384-PYKJb3pe3NcMDQEwtE4dhco57JRgW3sUP+Lt2IGccOSTCWPwdPLSdiriuPuir0F0"></script>
+    <script src="/js/webrtc.js" integrity="sha384-kHnOvfXtZse5NlHchuW8rjr18GRHcVjQIlmbaT7uI3Rc52S/xmOWqAalhKsOedxq"></script>
     <script>
         // Initialize i18n first
         i18n.init();
@@ -380,9 +380,9 @@
             }
 
             // Generate our ECDH key pair for key exchange
-            keyPair = await ImageSecureSendCrypto.generateKeyPair();
+            keyPair = await WebSendCrypto.generateKeyPair();
 
-            rtc = new ImageSecureSendRTC();
+            rtc = new WebSendRTC();
             await rtc.init();
 
             rtc.onConnected = onConnected;
@@ -651,10 +651,10 @@
                 logger.info('Received receiver public key, performing key exchange...');
                 try {
                     // Import receiver's public key
-                    const receiverPublicKey = await ImageSecureSendCrypto.importPublicKey(msg.key);
+                    const receiverPublicKey = await WebSendCrypto.importPublicKey(msg.key);
 
                     // Derive shared secret using ECDH
-                    sharedKey = await ImageSecureSendCrypto.deriveSharedKey(keyPair.privateKey, receiverPublicKey);
+                    sharedKey = await WebSendCrypto.deriveSharedKey(keyPair.privateKey, receiverPublicKey);
 
                     // Fetch active room count to adapt fingerprint length:
                     // fewer rooms = shorter key (easier to compare), more = longer (collision resistance)
@@ -663,15 +663,15 @@
                         const statsRes = await fetch('/api/stats');
                         if (statsRes.ok) {
                             const stats = await statsRes.json();
-                            fpLength = ImageSecureSendCrypto.computeFingerprintLength(stats.activeRooms);
+                            fpLength = WebSendCrypto.computeFingerprintLength(stats.activeRooms);
                         }
                     } catch (e) {
                         logger.warn('Could not fetch room stats, using max fingerprint length');
                     }
 
                     // Get fingerprints for verification (length adapts to server load)
-                    const ourFingerprint = await ImageSecureSendCrypto.getKeyFingerprint(keyPair.publicKey, fpLength);
-                    const theirFingerprint = await ImageSecureSendCrypto.getKeyFingerprint(receiverPublicKey, fpLength);
+                    const ourFingerprint = await WebSendCrypto.getKeyFingerprint(keyPair.publicKey, fpLength);
+                    const theirFingerprint = await WebSendCrypto.getKeyFingerprint(receiverPublicKey, fpLength);
 
                     // Display fingerprints in verification modal
                     // Sender key at top, receiver key at bottom (consistent on both devices)
@@ -681,7 +681,7 @@
                     logger.success(`Key exchange complete. Our key: ${ourFingerprint}, Their key: ${theirFingerprint}`);
 
                     // Send our public key to receiver so they can derive the same shared secret
-                    const ourPublicKeyB64 = await ImageSecureSendCrypto.exportPublicKey(keyPair.publicKey);
+                    const ourPublicKeyB64 = await WebSendCrypto.exportPublicKey(keyPair.publicKey);
                     rtc.sendMessage({
                         type: 'sender-public-key',
                         key: ourPublicKeyB64
@@ -898,7 +898,7 @@
                 // Compute SHA-256 of raw plaintext data BEFORE encryption.
                 // This hash will be compared against the receiver's hash of the
                 // decrypted data to verify end-to-end integrity.
-                const localHash = await ImageSecureSendCrypto.sha256Hex(photoData);
+                const localHash = await WebSendCrypto.sha256Hex(photoData);
                 logger.info(`Plaintext SHA-256: ${localHash}`);
 
                 // Encrypt with metadata bundled and padding applied.
@@ -910,7 +910,7 @@
                 const filename = currentPhotoBlob.name || `photo_${Date.now()}.png`;
                 const mimeType = currentPhotoBlob.type || 'image/png';
 
-                const encryptedData = await ImageSecureSendCrypto.encryptWithMetadata(
+                const encryptedData = await WebSendCrypto.encryptWithMetadata(
                     photoData,
                     {
                         name: filename,

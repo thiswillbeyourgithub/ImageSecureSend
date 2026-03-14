@@ -1,10 +1,10 @@
 /**
- * WebRTC module for ImageSecureSend
+ * WebRTC module for WebSend
  * Handles peer-to-peer connection establishment and data channel communication.
  * Uses server-based signaling for SDP exchange.
  */
 
-class ImageSecureSendRTC {
+class WebSendRTC {
     constructor() {
         this.pc = null;
         this.dataChannel = null;
@@ -335,7 +335,7 @@ class ImageSecureSendRTC {
     /**
      * Send a file (binary) over the data channel.
      * The data should already be encrypted with metadata bundled via
-     * ImageSecureSendCrypto.encryptWithMetadata() - this function only handles
+     * WebSendCrypto.encryptWithMetadata() - this function only handles
      * chunked transfer and does not see any plaintext metadata.
      *
      * @param {ArrayBuffer} encryptedData - Already-encrypted data with metadata bundled
@@ -424,7 +424,7 @@ class ImageSecureSendRTC {
 
         // Step 2: Create data channel and SDP offer
         logger.info('[Step 2/4] Creating data channel and SDP offer...');
-        const dc = this.pc.createDataChannel('imagesecuresend', { ordered: true });
+        const dc = this.pc.createDataChannel('websend', { ordered: true });
         this.setupDataChannel(dc);
 
         const offer = await this.pc.createOffer();
@@ -901,4 +901,4 @@ class ImageSecureSendRTC {
     }
 }
 
-window.ImageSecureSendRTC = ImageSecureSendRTC;
+window.WebSendRTC = WebSendRTC;

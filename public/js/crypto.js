@@ -1,5 +1,5 @@
 /**
- * Crypto module for ImageSecureSend
+ * Crypto module for WebSend
  *
  * Implements ECDH (Elliptic Curve Diffie-Hellman) key exchange with AES-GCM encryption.
  * This provides forward secrecy: if a private key is compromised later, past sessions
@@ -15,7 +15,7 @@
  * Uses Web Crypto API for all cryptographic operations.
  */
 
-const ImageSecureSendCrypto = {
+const WebSendCrypto = {
     /**
      * Generate an ECDH key pair using P-256 curve (128-bit security level).
      * P-256 is widely supported and recommended by NIST.
@@ -114,7 +114,7 @@ const ImageSecureSendCrypto = {
                 hash: 'SHA-256',
                 // Salt provides randomness; using fixed value is acceptable for ECDH
                 // since the shared secret itself is random per session
-                salt: new TextEncoder().encode('ImageSecureSend-v1'),
+                salt: new TextEncoder().encode('WebSend-v1'),
                 // Info provides domain separation
                 info: new TextEncoder().encode('AES-GCM-256-key')
             },
@@ -440,4 +440,4 @@ const ImageSecureSendCrypto = {
 };
 
 // Export for use in other modules
-window.ImageSecureSendCrypto = ImageSecureSendCrypto;
+window.WebSendCrypto = WebSendCrypto;

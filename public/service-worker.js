@@ -1,5 +1,5 @@
 /**
- * ImageSecureSend Service Worker
+ * WebSend Service Worker
  *
  * Caches static assets for offline fallback and enables PWA installation.
  * Uses a "network-first" strategy for all assets:
@@ -10,7 +10,7 @@
  * the freshest assets from network costs nothing extra.
  */
 
-const CACHE_NAME = 'imagesecuresend-v1';
+const CACHE_NAME = 'websend-v1';
 
 // Static assets to cache on install
 const STATIC_ASSETS = [

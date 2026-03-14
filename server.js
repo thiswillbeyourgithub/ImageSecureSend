@@ -1,5 +1,5 @@
 /**
- * Express server for ImageSecureSend
+ * Express server for WebSend
  * Serves static files, provides ICE configuration, and acts as a signaling server
  * for WebRTC SDP offer/answer exchange.
  */
@@ -717,7 +717,7 @@ app.get('/send/:roomId', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log('='.repeat(60));
-    console.log('  ImageSecureSend - Startup Configuration');
+    console.log('  WebSend - Startup Configuration');
     console.log('='.repeat(60));
 
     const envVars = [

@@ -1,5 +1,5 @@
 /**
- * ImageSecureSend Internationalization (i18n) Module
+ * WebSend Internationalization (i18n) Module
  *
  * Simple translation system supporting English and French.
  * Detects browser locale and falls back to English if not French.
@@ -16,7 +16,7 @@ const i18n = (function() {
     const translations = {
         en: {
             // Common
-            'app.name': 'ImageSecureSend',
+            'app.name': 'WebSend',
             'app.subtitle': 'Secure Photo Transfer',
             'nav.back': '← Back',
             'common.close': 'Close',
@@ -30,7 +30,7 @@ const i18n = (function() {
             'index.about': 'About',
 
             // About modal
-            'about.title': 'About ImageSecureSend',
+            'about.title': 'About WebSend',
             'about.description': 'A secure, end-to-end encrypted photo transfer app designed for environments where data privacy is paramount. Photos never leave your device unencrypted, and only the intended recipient can decrypt them — no middleman, not even the server, ever has access.',
             'about.techStack': 'Tech Stack',
             'about.techStack.frontend': 'Vanilla HTML, CSS, JavaScript (no frameworks)',
@@ -169,7 +169,7 @@ const i18n = (function() {
 
         fr: {
             // Common
-            'app.name': 'ImageSecureSend',
+            'app.name': 'WebSend',
             'app.subtitle': 'Transfert de Photos Sécurisé',
             'nav.back': '← Retour',
             'common.close': 'Fermer',
@@ -183,7 +183,7 @@ const i18n = (function() {
             'index.about': 'À propos',
 
             // About modal
-            'about.title': 'À propos de ImageSecureSend',
+            'about.title': 'À propos de WebSend',
             'about.description': 'Une application de transfert de photos sécurisée, chiffrée de bout en bout, conçue pour les environnements où la confidentialité des données est primordiale. Les photos ne quittent jamais votre appareil sans être chiffrées, et seul le destinataire peut les déchiffrer — aucun intermédiaire, pas même le serveur, n\'y a accès.',
             'about.techStack': 'Technologies',
             'about.techStack.frontend': 'HTML, CSS, JavaScript pur (sans framework)',

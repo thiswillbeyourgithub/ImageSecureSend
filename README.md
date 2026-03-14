@@ -1,8 +1,8 @@
-# ImageSecureSend
+# WebSend
 
 **Use your regular smartphone as a secure document scanner** -- even for sensitive documents.
 
-ImageSecureSend transfers photos directly between devices using WebRTC and end-to-end encryption. Photos are encrypted on the sender's device and decrypted only on the receiver's device. They never pass through any server unencrypted, and they never touch the phone's storage.
+WebSend transfers photos directly between devices using WebRTC and end-to-end encryption. Photos are encrypted on the sender's device and decrypted only on the receiver's device. They never pass through any server unencrypted, and they never touch the phone's storage.
 
 ## Disclaimer
 

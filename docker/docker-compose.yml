@@ -1,6 +1,6 @@
 services:
-  imagesecuresend:
-    container_name: imagesecuresend
+  websend:
+    container_name: websend
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
@@ -53,7 +53,7 @@ services:
 
   # ── coturn TURN relay server ──────────────────────────────────────────
   # This project ships with a bundled coturn (https://github.com/coturn/coturn)
-  # service, pre-configured to work out of the box with ImageSecureSend.
+  # service, pre-configured to work out of the box with WebSend.
   # coturn acts as a TURN relay for when direct peer-to-peer WebRTC fails
   # (e.g. symmetric NAT, restrictive firewalls, carrier-grade NAT).
   #
@@ -103,7 +103,7 @@ services:
       --no-cli
       --no-dtls
       --no-tls
-      --realm=imagesecuresend
+      --realm=websend
       --min-port=49152
       --max-port=49161
       --listening-port=3478

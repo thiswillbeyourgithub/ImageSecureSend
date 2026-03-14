@@ -4,7 +4,7 @@
 
 ## Overview
 
-ImageSecureSend is a webapp for securely transferring photos from a phone (sender) to a
+WebSend is a webapp for securely transferring photos from a phone (sender) to a
 computer (receiver). It uses WebRTC for peer-to-peer data transfer and ECDH + AES-GCM
 for end-to-end encryption. The server's only role is signaling (SDP relay) and serving
 static files — it never sees photo data or encryption keys.
@@ -12,7 +12,7 @@ static files — it never sees photo data or encryption keys.
 ## Directory Structure
 
 ```
-ImageSecureSend/
+WebSend/
 ├── server.js               # Express server: signaling API, ICE config, static serving
 ├── Dockerfile              # Node 20 Alpine image, non-root user, production build
 ├── docker-compose.yml      # Service definition with security hardening (read-only FS,

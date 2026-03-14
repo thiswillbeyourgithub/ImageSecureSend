@@ -1,6 +1,6 @@
 {
-  "name": "ImageSecureSend - Secure Photo Transfer",
-  "short_name": "ImageSecureSend",
+  "name": "WebSend - Secure Photo Transfer",
+  "short_name": "WebSend",
   "description": "End-to-end encrypted photo transfer between devices",
   "start_url": "/",
   "display": "standalone",

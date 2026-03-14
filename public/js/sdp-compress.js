@@ -1,5 +1,5 @@
 /**
- * SDP Compression module for ImageSecureSend
+ * SDP Compression module for WebSend
  * Compresses WebRTC SDP offers to fit in a QR code.
  *
  * Strategy:
