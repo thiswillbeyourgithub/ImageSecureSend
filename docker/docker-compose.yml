@@ -6,6 +6,7 @@ services:
       dockerfile: ./docker/Dockerfile
     ports:
       - "127.0.0.1:7395:8080"
+    restart: unless-stopped
     environment:
       - DOMAIN=${DOMAIN:-localhost}
       - DEV=${DEV:-0}
@@ -124,6 +125,7 @@ services:
     privileged: false
     # Note: coturn image runs as root by default; running as non-root
     # may break startup. The other hardening measures mitigate this.
+    restart: unless-stopped
     deploy:
       resources:
         limits:
