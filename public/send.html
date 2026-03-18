@@ -470,8 +470,11 @@
                 document.getElementById('start-scan-btn').textContent = i18n.t('send.scanning');
                 document.getElementById('start-scan-btn').disabled = true;
 
-                // Scroll camera into view so user doesn't see a gap above it
-                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Scroll camera into view once the video has dimensions,
+                // so the container is properly sized when we scroll
+                video.addEventListener('loadeddata', () => {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, { once: true });
 
                 // Start scanning loop
                 requestAnimationFrame(scanFrame);
@@ -783,8 +786,11 @@
                 const settings = track.getSettings();
                 logger.info(`Camera resolution: ${settings.width}x${settings.height}`);
 
-                // Scroll camera into view so it fills the screen without a gap at top
-                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Scroll camera into view once the video has rendered its first frame,
+                // so the container has its full height for accurate scroll positioning
+                video.addEventListener('loadeddata', () => {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, { once: true });
             } catch (e) {
                 logger.error('Failed to start camera: ' + e.message);
                 showToast(i18n.t('send.cameraFailed'));
