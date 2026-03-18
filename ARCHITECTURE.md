@@ -13,59 +13,65 @@ static files — it never sees photo data or encryption keys.
 
 ```
 WebSend/
-├── server.js               # Express server: signaling API, ICE config, static serving
-├── Dockerfile              # Node 20 Alpine image, non-root user, production build
-├── docker-compose.yml      # Service definition with security hardening (read-only FS,
-│                           #   dropped capabilities, resource limits, health check)
-│                           #   Also contains commented-out coturn TURN relay service
-├── package.json            # Dependencies (express only)
-├── env                     # Active environment config (gitignored)
-├── env.example             # Documented env vars: DOMAIN, ICE servers, TURN credentials
 ├── CLAUDE.md               # Project spec and instructions for AI-assisted development
 ├── TODO.md                 # Task tracking
 ├── README.md               # User-facing docs: features, security, deployment
+├── deploy.sh               # Deployment script
 │
-└── public/                 # Static frontend (vanilla HTML/CSS/JS, no build step)
-    ├── index.html          # Landing page: "Receive" and "Send" buttons, About modal
-    ├── receive.html        # Receiver flow: key generation, room creation, QR display,
-    │                       #   WebRTC answer polling, decryption, image display,
-    │                       #   perspective crop tool, PDF generation
-    ├── send.html           # Sender flow: QR scanning (jsQR), room joining, key exchange,
-    │                       #   camera capture or file picker, encryption, chunked sending
-    ├── manifest.json       # PWA manifest (installable as app on mobile)
-    ├── service-worker.js   # PWA service worker: caches static assets for fast reload
-    │                       #   (stale-while-revalidate strategy; API calls bypass cache).
-    │                       #   CACHE_NAME is timestamped by update-sri.js on each deploy,
-    │                       #   triggering auto-reload via controllerchange in the clients
+├── docker/
+│   ├── Dockerfile          # Node 20 Alpine image, non-root user, production build
+│   ├── docker-compose.yml  # Service definition with security hardening (read-only FS,
+│   │                       #   dropped capabilities, resource limits, health check)
+│   │                       #   Also contains commented-out coturn TURN relay service
+│   └── env.example         # Documented env vars: DOMAIN, ICE servers, TURN credentials
+│
+└── src/
+    ├── server.js           # Express server: signaling API, ICE config, static serving
+    ├── package.json        # Dependencies (express only)
+    ├── update-sri.js       # SRI hash generator for script/link integrity attributes
+    ├── sri-hashes.json     # Generated SRI hashes (used by update-sri.js)
     │
-    ├── css/
-    │   └── style.css       # All styles: dark theme, large touch targets for accessibility,
-    │                       #   responsive layout, crop modal, logs panel
-    │
-    ├── js/
-    │   ├── crypto.js       # ECDH key exchange (P-256) + AES-GCM-256 encryption via
-    │   │                   #   Web Crypto API. Includes HKDF key derivation, key
-    │   │                   #   fingerprinting for MITM detection, size-bucket padding
-    │   │                   #   to hide exact file sizes, and metadata bundling (filename,
-    │   │                   #   MIME type encrypted inside the payload)
-    │   ├── webrtc.js       # WebRTC peer connection management: room creation/joining,
-    │   │                   #   SDP offer/answer exchange via server API, trickle ICE
-    │   │                   #   candidate relay, data channel setup, chunked file transfer,
-    │   │                   #   connection type detection (direct vs TURN relay)
-    │   ├── logger.js       # In-memory log buffer with UI panel (slide-up overlay).
-    │   │                   #   Supports info/success/warn/error/debug levels.
-    │   │                   #   DEV mode (toggled via server config) enables verbose output
-    │   ├── i18n.js         # Internationalization: English + French. Detects browser locale,
-    │   │                   #   applies translations via data-i18n attributes on DOM elements
-    │   ├── sdp-compress.js # SDP compression utilities (extracts essential SDP fields,
-    │   │                   #   compresses with deflate, reconstructs minimal valid SDP).
-    │   │                   #   Used to keep QR codes small
-    │   ├── qrcode.min.js   # QR code generator library (vendored, used by receiver)
-    │   └── jsqr.min.js     # QR code scanner library (vendored, used by sender)
-    │
-    └── icons/
-        ├── icon-192.png    # PWA icon (192x192)
-        └── icon-512.png    # PWA icon (512x512)
+    └── public/             # Static frontend (vanilla HTML/CSS/JS, no build step)
+        ├── index.html      # Landing page: "Receive" and "Send" buttons, About modal
+        ├── receive.html    # Receiver flow: key generation, room creation, QR display,
+        │                   #   WebRTC answer polling, decryption, image display,
+        │                   #   perspective crop tool, PDF generation
+        ├── send.html       # Sender flow: QR scanning (jsQR), room joining, key exchange,
+        │                   #   camera capture or file picker, encryption, chunked sending
+        ├── manifest.json   # PWA manifest (installable as app on mobile)
+        ├── service-worker.js # PWA service worker: caches static assets for fast reload
+        │                   #   (stale-while-revalidate strategy; API calls bypass cache).
+        │                   #   CACHE_NAME is timestamped by update-sri.js on each deploy,
+        │                   #   triggering auto-reload via controllerchange in the clients
+        │
+        ├── css/
+        │   └── style.css   # All styles: dark theme, large touch targets for accessibility,
+        │                   #   responsive layout, crop modal, logs panel
+        │
+        ├── js/
+        │   ├── crypto.js   # ECDH key exchange (P-256) + AES-GCM-256 encryption via
+        │   │               #   Web Crypto API. Includes HKDF key derivation, key
+        │   │               #   fingerprinting for MITM detection, size-bucket padding
+        │   │               #   to hide exact file sizes, and metadata bundling (filename,
+        │   │               #   MIME type encrypted inside the payload)
+        │   ├── webrtc.js   # WebRTC peer connection management: room creation/joining,
+        │   │               #   SDP offer/answer exchange via server API, trickle ICE
+        │   │               #   candidate relay, data channel setup, chunked file transfer,
+        │   │               #   connection type detection (direct vs TURN relay)
+        │   ├── logger.js   # In-memory log buffer with UI panel (slide-up overlay).
+        │   │               #   Supports info/success/warn/error/debug levels.
+        │   │               #   DEV mode (toggled via server config) enables verbose output
+        │   ├── i18n.js     # Internationalization: English + French. Detects browser locale,
+        │   │               #   applies translations via data-i18n attributes on DOM elements
+        │   ├── sdp-compress.js # SDP compression utilities (extracts essential SDP fields,
+        │   │               #   compresses with deflate, reconstructs minimal valid SDP).
+        │   │               #   Used to keep QR codes small
+        │   ├── qrcode.min.js # QR code generator library (vendored, used by receiver)
+        │   └── jsqr.min.js # QR code scanner library (vendored, used by sender)
+        │
+        └── icons/
+            ├── icon-192.png # PWA icon (192x192)
+            └── icon-512.png # PWA icon (512x512)
 ```
 
 ## Data Flow
@@ -175,4 +181,4 @@ Room endpoints require an `X-Room-Secret` header (constant-time comparison).
 
 Expected to run behind **Caddy** reverse proxy which handles HTTPS termination.
 Docker Compose exposes port 7395 mapped to internal 8080. Configure via `env` file
-(copy from `env.example`).
+(copy from `docker/env.example`).
