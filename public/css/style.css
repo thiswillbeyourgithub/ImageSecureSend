@@ -70,14 +70,14 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 30px 20px;
-    border-radius: 20px;
+    padding: 18px 16px;
+    border-radius: 14px;
     text-decoration: none;
     font-weight: bold;
     transition: transform 0.2s, box-shadow 0.2s;
     cursor: pointer;
     border: none;
-    min-height: 120px;
+    min-height: 70px;
 }
 
 .btn:active {
@@ -85,7 +85,7 @@ h1 {
 }
 
 .btn-large {
-    min-height: 150px;
+    min-height: 90px;
 }
 
 .btn-primary {
@@ -110,12 +110,12 @@ h1 {
 }
 
 .btn-icon {
-    font-size: 3rem;
-    margin-bottom: 10px;
+    font-size: 2rem;
+    margin-bottom: 6px;
 }
 
 .btn-text {
-    font-size: 1.8rem;
+    font-size: 1.3rem;
 }
 
 .btn-hint {
@@ -127,11 +127,11 @@ h1 {
 
 /* Action buttons (smaller, for in-page actions) */
 .btn-action {
-    padding: 20px 40px;
-    font-size: 1.3rem;
-    min-height: 80px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    min-height: 48px;
     width: 100%;
-    margin: 10px 0;
+    margin: 6px 0;
 }
 
 .btn-success {
@@ -245,8 +245,8 @@ h1 {
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 20px 50px;
-    font-size: 1.3rem;
+    padding: 14px 36px;
+    font-size: 1.1rem;
     min-height: auto;
     background: rgba(220, 53, 69, 0.7) !important;
     backdrop-filter: blur(5px);
@@ -730,9 +730,9 @@ footer {
 
 .crop-buttons button {
     flex: 1;
-    padding: 15px;
-    font-size: 1.1rem;
-    border-radius: 10px;
+    padding: 10px;
+    font-size: 0.95rem;
+    border-radius: 8px;
     border: none;
     cursor: pointer;
     font-weight: bold;
@@ -882,10 +882,10 @@ footer {
     }
 
     .btn-text {
-        font-size: 1.5rem;
+        font-size: 1.1rem;
     }
 
     .btn-icon {
-        font-size: 2.5rem;
+        font-size: 1.8rem;
     }
 }
