@@ -875,6 +875,42 @@ footer {
     to { opacity: 0; }
 }
 
+/* Wider screens (tablets, landscape phones, desktops): use available space
+   instead of being locked to a narrow 500px column */
+@media (min-width: 700px) {
+    .container {
+        max-width: 800px;
+    }
+
+    .camera-container {
+        max-width: 700px;
+    }
+
+    .qr-container {
+        max-width: 400px;
+    }
+
+    /* Side-by-side choice buttons on wide screens */
+    .choice-container {
+        flex-direction: row;
+    }
+
+    .choice-container .btn-action {
+        flex: 1;
+    }
+}
+
+/* Very wide screens (desktops): cap at reasonable width */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1000px;
+    }
+
+    .camera-container {
+        max-width: 800px;
+    }
+}
+
 /* Responsive adjustments for small screens (older/budget smartphones).
    Reduces font sizes to prevent text overflow while keeping touch targets large. */
 @media (max-width: 400px) {
