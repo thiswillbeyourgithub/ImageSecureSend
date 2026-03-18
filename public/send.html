@@ -288,6 +288,8 @@
         let scannerStream = null;
         let captureStream = null;
         let currentPhotoBlob = null;
+        // Stores the original (pre-crop) blob so re-cropping uses the uncropped image
+        let originalPhotoBlob = null;
         let weConfirmed = false;  // Track if we confirmed fingerprints
         let theyConfirmed = false; // Track if receiver confirmed fingerprints
         let cameraZoom = 1;
@@ -607,6 +609,7 @@
          */
         function cleanupAllData() {
             currentPhotoBlob = null;
+            originalPhotoBlob = null;
             // Revoke preview image URL
             const preview = document.getElementById('preview-image');
             if (preview && preview.src && preview.src.startsWith('blob:')) {
@@ -895,6 +898,7 @@
             // than PNG, and avoids lossy-to-lossless re-encoding artifacts
             canvas.toBlob(blob => {
                 currentPhotoBlob = blob;
+                originalPhotoBlob = blob;
                 logger.info(`Captured photo: ${video.videoWidth}x${video.videoHeight}, ${(blob.size / 1024).toFixed(0)} KB`);
                 stopCapture();
                 showPreview(blob);
@@ -925,6 +929,7 @@
                 currentPhotoBlob = new File([stripped.data], file.name.replace(/\.[^.]+$/, '.png'), {
                     type: stripped.mimeType
                 });
+                originalPhotoBlob = currentPhotoBlob;
                 logger.success(`Metadata stripped: ${file.size} → ${currentPhotoBlob.size} bytes`);
             } catch (e) {
                 // If stripping fails for any reason, refuse to send rather than leaking metadata
@@ -1087,6 +1092,7 @@
 
             // Clear sent photo data from memory — receiver confirmed receipt
             currentPhotoBlob = null;
+            originalPhotoBlob = null;
             const preview = document.getElementById('preview-image');
             if (preview.src && preview.src.startsWith('blob:')) {
                 URL.revokeObjectURL(preview.src);
@@ -1200,13 +1206,16 @@
 
         /**
          * Open the crop modal for the current preview image.
-         * Uses currentPhotoBlob as the image source.
+         * Always crops from the original (pre-crop) image so re-cropping
+         * doesn't compound quality loss from previous crops.
          */
         function openCropModal() {
             if (!currentPhotoBlob) return;
             logger.info('Opening crop modal');
 
-            cropState.originalUrl = document.getElementById('preview-image').src;
+            // Use the original uncropped blob for the crop source
+            const sourceBlob = originalPhotoBlob || currentPhotoBlob;
+            cropState.originalUrl = URL.createObjectURL(sourceBlob);
 
             // Reset corners to near-edge defaults
             cropState.corners = {
@@ -1236,6 +1245,10 @@
 
         function closeCropModal() {
             logger.info('Crop cancelled');
+            // Revoke the object URL created in openCropModal
+            if (cropState.originalUrl && cropState.originalUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(cropState.originalUrl);
+            }
             document.getElementById('crop-modal').classList.add('hidden');
             cropState.dragging = null;
         }
