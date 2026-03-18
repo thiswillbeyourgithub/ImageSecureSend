@@ -209,6 +209,36 @@ h1 {
     touch-action: none;
 }
 
+/* Flash toggle button - top-right corner of camera view */
+.flash-toggle-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 11;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.flash-toggle-btn:active {
+    background: rgba(255, 255, 255, 0.3);
+}
+/* Highlight when torch or flash mode is active */
+.flash-toggle-btn.flash-active {
+    background: rgba(255, 193, 7, 0.6);
+    border-color: rgba(255, 193, 7, 0.8);
+}
+
 /* Floating capture button overlay - positioned inside the camera container */
 .capture-btn-floating {
     position: absolute;

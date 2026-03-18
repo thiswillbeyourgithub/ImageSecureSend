@@ -10,7 +10,7 @@
     <title>WebSend - Send Photos</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
-    <link rel="stylesheet" href="/css/style.css" integrity="sha384-zDDx57/PawPLBt9mBHNPuUvdEH9zWCGNXiRQ2jUT1pTEu/Zr5nKyh0AMxBxwhtk1" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css" integrity="sha384-LVLh94E58dZK4WlBbKYGmOofq9VYBF0DX0r6NKhYX+c2rjI6Mq5qHYzTvy4CVNrd" crossorigin="anonymous">
     <!-- QR Scanner library - lightweight (local copy to avoid CDN issues) -->
     <script src="/js/jsqr.min.js" integrity="sha384-9Q0jWoineiIq95JeIyBsNV90KKLfDsbkj29k/YFxf76a2JwkHDYkMuSbNGN6XJfV" crossorigin="anonymous"></script>
 </head>
@@ -166,6 +166,12 @@
         <div id="step-camera" class="hidden">
             <div class="camera-container" id="capture-camera-container">
                 <video id="capture-video" autoplay playsinline></video>
+                <!-- Flash mode toggle: cycles off → torch → flash-on-capture → off
+                     Only visible when the device supports torch via ImageCapture API -->
+                <button class="flash-toggle-btn hidden" id="flash-toggle-btn" title="Flash mode">
+                    <span id="flash-icon">⚡</span>
+                    <span id="flash-label" data-i18n="send.flashOff">Off</span>
+                </button>
                 <!-- Floating capture button inside camera view -->
                 <button class="btn btn-action btn-danger capture-btn-floating" id="capture-btn" data-i18n="send.capture">
                     📸 Take Photo
@@ -286,6 +292,9 @@
         let theyConfirmed = false; // Track if receiver confirmed fingerprints
         let cameraZoom = 1;
         let lastPinchDist = 0;
+        // Flash modes: 'off' → 'torch' (constant light) → 'flash' (fire on capture) → 'off'
+        let flashMode = 'off';
+        let torchSupported = false;
 
         // UI Elements
         const stepScan = document.getElementById('step-scan');
@@ -714,7 +723,9 @@
         // Photos are captured in-browser only - they never touch the device's
         // camera roll or filesystem. This is critical for data privacy.
 
-        /** Start the rear camera in high resolution mode for photo capture */
+        /** Start the rear camera in high resolution mode for photo capture.
+         *  Requests the maximum resolution the device supports (up to 4K) and
+         *  enables continuous autofocus/exposure for sharper results. */
         async function startCapture() {
             logger.info('Starting camera for capture...');
             showStep(stepCamera);
@@ -723,17 +734,48 @@
             const container = video.parentElement;
 
             try {
-                // Use back camera, high resolution
+                // Request highest available resolution with continuous AF/AE
                 captureStream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: 'environment',
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
+                        width: { ideal: 3840 },
+                        height: { ideal: 2160 },
                     }
                 });
                 video.srcObject = captureStream;
                 container.classList.add('active');
                 video.play();
+
+                // Apply advanced constraints (AF, AE, AWB) if supported.
+                // These are applied after getUserMedia because some devices
+                // only report capabilities once the stream is active.
+                const track = captureStream.getVideoTracks()[0];
+                try {
+                    const caps = track.getCapabilities ? track.getCapabilities() : {};
+                    const advanced = {};
+                    if (caps.focusMode && caps.focusMode.includes('continuous')) {
+                        advanced.focusMode = 'continuous';
+                    }
+                    if (caps.exposureMode && caps.exposureMode.includes('continuous')) {
+                        advanced.exposureMode = 'continuous';
+                    }
+                    if (caps.whiteBalanceMode && caps.whiteBalanceMode.includes('continuous')) {
+                        advanced.whiteBalanceMode = 'continuous';
+                    }
+                    if (Object.keys(advanced).length > 0) {
+                        await track.applyConstraints({ advanced: [advanced] });
+                        logger.info('Applied advanced camera constraints: ' + JSON.stringify(advanced));
+                    }
+
+                    // Detect torch support and show/hide flash button
+                    torchSupported = !!(caps.torch);
+                    setupFlashButton(track);
+                } catch (constraintErr) {
+                    logger.warn('Could not apply advanced constraints: ' + constraintErr.message);
+                }
+
+                const settings = track.getSettings();
+                logger.info(`Camera resolution: ${settings.width}x${settings.height}`);
 
                 // Scroll camera into view so the capture button is visible
                 container.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -741,6 +783,60 @@
                 logger.error('Failed to start camera: ' + e.message);
                 showToast(i18n.t('send.cameraFailed'));
                 showStep(stepChoose);
+            }
+        }
+
+        /** Configure the flash toggle button visibility and click handler */
+        function setupFlashButton(track) {
+            const btn = document.getElementById('flash-toggle-btn');
+            if (!torchSupported) {
+                btn.classList.add('hidden');
+                return;
+            }
+            btn.classList.remove('hidden');
+            flashMode = 'off';
+            updateFlashUI();
+
+            // Remove old listener by replacing element (simple approach)
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.addEventListener('click', () => cycleFlashMode(track));
+        }
+
+        /** Cycle flash mode: off → torch → flash → off */
+        function cycleFlashMode(track) {
+            const modes = ['off', 'torch', 'flash'];
+            const idx = modes.indexOf(flashMode);
+            flashMode = modes[(idx + 1) % modes.length];
+            logger.info('Flash mode: ' + flashMode);
+
+            // Torch mode keeps the light on continuously;
+            // flash mode will fire it briefly during capture
+            if (flashMode === 'torch') {
+                track.applyConstraints({ advanced: [{ torch: true }] });
+            } else {
+                track.applyConstraints({ advanced: [{ torch: false }] });
+            }
+            updateFlashUI();
+        }
+
+        /** Update flash button icon and label to reflect current mode */
+        function updateFlashUI() {
+            const btn = document.getElementById('flash-toggle-btn');
+            const icon = document.getElementById('flash-icon');
+            const label = document.getElementById('flash-label');
+            if (flashMode === 'off') {
+                icon.textContent = '⚡';
+                label.textContent = i18n.t('send.flashOff');
+                btn.classList.remove('flash-active');
+            } else if (flashMode === 'torch') {
+                icon.textContent = '🔦';
+                label.textContent = i18n.t('send.flashTorch');
+                btn.classList.add('flash-active');
+            } else {
+                icon.textContent = '⚡';
+                label.textContent = i18n.t('send.flashAuto');
+                btn.classList.add('flash-active');
             }
         }
 
@@ -755,25 +851,50 @@
             video.srcObject = null;
             container.classList.remove('active');
             resetCameraZoom(video);
+            flashMode = 'off';
+            const flashBtn = document.getElementById('flash-toggle-btn');
+            if (flashBtn) flashBtn.classList.add('hidden');
         }
 
-        /** Capture a single frame from the video stream and convert to JPEG blob */
+        /** Capture a single frame from the video stream and convert to JPEG blob.
+         *  Uses high-quality JPEG (0.95) for much better file size vs PNG while
+         *  retaining excellent visual quality. If flash mode is 'flash', the torch
+         *  is fired briefly during capture to illuminate the scene. */
         async function capturePhoto() {
             const video = document.getElementById('capture-video');
             const canvas = document.getElementById('capture-canvas');
+            const track = captureStream ? captureStream.getVideoTracks()[0] : null;
 
-            // Capture at video resolution
+            // If flash mode is 'flash', turn on torch briefly for the capture
+            if (flashMode === 'flash' && track && torchSupported) {
+                try {
+                    await track.applyConstraints({ advanced: [{ torch: true }] });
+                    // Small delay to let the light stabilize and camera adjust exposure
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                } catch (e) {
+                    logger.warn('Flash fire failed: ' + e.message);
+                }
+            }
+
+            // Capture at full video resolution
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0);
 
-            // Convert to blob
+            // Turn off flash torch after capture
+            if (flashMode === 'flash' && track && torchSupported) {
+                track.applyConstraints({ advanced: [{ torch: false }] }).catch(() => {});
+            }
+
+            // JPEG at 0.95 quality gives excellent results with smaller file sizes
+            // than PNG, and avoids lossy-to-lossless re-encoding artifacts
             canvas.toBlob(blob => {
                 currentPhotoBlob = blob;
+                logger.info(`Captured photo: ${video.videoWidth}x${video.videoHeight}, ${(blob.size / 1024).toFixed(0)} KB`);
                 stopCapture();
                 showPreview(blob);
-            }, 'image/png');
+            }, 'image/jpeg', 0.95);
         }
 
         /** Handle file picker selection - validate it's an image, strip metadata, then show preview */
