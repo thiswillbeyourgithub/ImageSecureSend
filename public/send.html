@@ -590,6 +590,20 @@
                 statusEl.textContent = detail;
                 statusEl.className = 'status status-error';
                 statusEl.style.whiteSpace = 'pre-line';
+                // Add a retry button so the user can easily go back to scanning
+                // instead of relying on the small back-link at the top
+                if (!document.getElementById('error-retry-btn')) {
+                    const retryBtn = document.createElement('button');
+                    retryBtn.id = 'error-retry-btn';
+                    retryBtn.textContent = i18n.t('send.backToScan') || 'Back to scan';
+                    retryBtn.className = 'btn btn-action';
+                    retryBtn.style.marginTop = '15px';
+                    retryBtn.addEventListener('click', () => {
+                        retryBtn.remove();
+                        showStep(stepScan);
+                    });
+                    stepConnecting.appendChild(retryBtn);
+                }
                 // Keep step-connecting visible so the error message is shown
                 showStep(stepConnecting);
             }
@@ -1277,17 +1291,24 @@
                 handle.addEventListener('mousedown', (e) => {
                     e.preventDefault();
                     cropState.dragging = corner;
+                    // No offset when dragging directly on the handle
+                    cropState.dragOffsetX = 0;
+                    cropState.dragOffsetY = 0;
                     updateCropMagnifier(cropState.corners[corner].x, cropState.corners[corner].y);
                 });
 
                 handle.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     cropState.dragging = corner;
+                    cropState.dragOffsetX = 0;
+                    cropState.dragOffsetY = 0;
                     updateCropMagnifier(cropState.corners[corner].x, cropState.corners[corner].y);
                 }, { passive: false });
             });
 
-            // Clicking anywhere on the container starts dragging the nearest corner
+            // Clicking anywhere on the container starts dragging the nearest corner.
+            // We store the offset between the click position and the corner so the
+            // corner moves relative to finger/cursor movement instead of teleporting.
             function startNearestCorner(e) {
                 if (e.target.classList.contains('crop-handle')) return;
                 e.preventDefault();
@@ -1304,12 +1325,10 @@
                     if (d < minDist) { minDist = d; closest = c; }
                 }
                 cropState.dragging = closest;
-                cropState.corners[closest] = {
-                    x: Math.max(0, Math.min(1, x)),
-                    y: Math.max(0, Math.min(1, y))
-                };
-                updateCropOverlay();
-                updateCropMagnifier(x, y);
+                // Store offset so dragging is relative, not a teleport
+                cropState.dragOffsetX = cropState.corners[closest].x - x;
+                cropState.dragOffsetY = cropState.corners[closest].y - y;
+                updateCropMagnifier(cropState.corners[closest].x, cropState.corners[closest].y);
             }
             container.addEventListener('mousedown', startNearestCorner);
             container.addEventListener('touchstart', startNearestCorner, { passive: false });
@@ -1336,8 +1355,11 @@
                 clientY = e.clientY;
             }
 
-            const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-            const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+            // Apply drag offset so the corner follows relative cursor movement
+            const rawX = (clientX - rect.left) / rect.width + (cropState.dragOffsetX || 0);
+            const rawY = (clientY - rect.top) / rect.height + (cropState.dragOffsetY || 0);
+            const x = Math.max(0, Math.min(1, rawX));
+            const y = Math.max(0, Math.min(1, rawY));
 
             cropState.corners[cropState.dragging] = { x, y };
             updateCropOverlay();
