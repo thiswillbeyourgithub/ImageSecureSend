@@ -2,7 +2,7 @@ services:
   websend:
     container_name: websend
     build:
-      context: ..
+      context: ../src
       dockerfile: ./docker/Dockerfile
     ports:
       - "127.0.0.1:7395:8080"
