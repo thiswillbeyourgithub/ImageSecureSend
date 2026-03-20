@@ -4,6 +4,29 @@
  * Large touch targets, high contrast, clear typography.
  */
 
+/* Maintenance banner shown when server is in DEV mode */
+.maintenance-banner {
+    display: none;
+    background: #ff9800;
+    color: #000;
+    text-align: center;
+    padding: 12px 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.maintenance-banner.visible {
+    display: block;
+}
+body.has-maintenance-banner {
+    padding-top: 48px;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;

@@ -10,11 +10,12 @@
     <title>WebSend - Receive Photos</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
-    <link rel="stylesheet" href="/css/style.css" integrity="sha384-y/cFBLA4Wu+By/kw1mIcyWALqiflbrZ/5RUalg/okNUEa29ttpts0ZfBVfuwrvdb" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css" integrity="sha384-ihety/NYMTfqYFNqUx65xpg5k8sgtLu4oJ15SOiNg0N2Z9ga14LzGu+lmqPa6ljJ" crossorigin="anonymous">
     <!-- QR Code library - lightweight, no dependencies (local copy to avoid CDN issues) -->
     <script src="/js/qrcode.min.js" integrity="sha384-HGmnkDZJy7mRkoARekrrj0VjEFSh9a0Z8qxGri/kTTAJkgR8hqD1lHsYSh3JdzRi" crossorigin="anonymous"></script>
 </head>
 <body>
+    <div id="maintenance-banner" class="maintenance-banner" data-i18n="maintenance.banner"></div>
     <!-- Settings button: opens sidebar with settings, logs, about -->
     <button class="kebab-btn" id="kebab-btn" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
 
@@ -1872,6 +1873,12 @@
                 badge.textContent = i18n.t('menu.devMode');
                 badge.setAttribute('data-i18n', 'menu.devMode');
                 badge.classList.add('dev-active');
+                const banner = document.getElementById('maintenance-banner');
+                if (banner) {
+                    banner.textContent = i18n.t('maintenance.banner');
+                    banner.classList.add('visible');
+                    document.body.classList.add('has-maintenance-banner');
+                }
             } else {
                 badge.textContent = i18n.t('menu.prodMode');
                 badge.setAttribute('data-i18n', 'menu.prodMode');
