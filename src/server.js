@@ -26,7 +26,7 @@ const UMAMI_DNT = process.env.UMAMI_DNT || 'true';
 
 // OCR settings (scribe.js)
 const OCR_LANGS = process.env.OCR_LANGS || 'eng,fra';
-const OCR_PSM = process.env.OCR_PSM || '6';
+const OCR_PSM = process.env.OCR_PSM || '12';
 
 // ============ ICE Server Configuration ============
 // STUN_SERVER: optional self-hosted STUN server (host:port)

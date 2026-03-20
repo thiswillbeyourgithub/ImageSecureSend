@@ -1112,7 +1112,7 @@
 
                 // Run OCR recognition with server-configured languages, PSM, and best accuracy (combined OEM)
                 const ocrLangs = window.__wsConfig?.ocrLangs || ['eng', 'fra'];
-                const ocrPsm = window.__wsConfig?.ocrPsm || '6';
+                const ocrPsm = window.__wsConfig?.ocrPsm || '12';
                 await scribe.recognize({ langs: ocrLangs, modeAdv: 'combined', config: { tessedit_pageseg_mode: ocrPsm } });
 
                 // Export as searchable PDF
