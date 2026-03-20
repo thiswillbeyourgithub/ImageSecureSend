@@ -551,6 +551,48 @@ h1 {
     margin: 10px 0;
 }
 
+/* Edit toggle button: sits below the preview image, full-width secondary style */
+.edit-toggle-btn {
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+/* Edit toolbar: three icon+label buttons side by side */
+.edit-toolbar {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.edit-tool-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 6px;
+    background: #2a2a4a;
+    border: 1px solid #4a4a7a;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 0.8rem;
+    cursor: pointer;
+    /* Large touch target, no min-width so the 3 buttons share space evenly */
+    min-height: 64px;
+    transition: background 0.15s;
+}
+
+.edit-tool-btn span:first-child {
+    font-size: 1.4rem;
+}
+
+.edit-tool-btn:active,
+.edit-tool-btn:hover {
+    background: #3a3a6a;
+}
+
 /* Received images list */
 .received-images {
     display: flex;

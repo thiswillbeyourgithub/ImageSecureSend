@@ -93,6 +93,9 @@ const i18n = (function() {
             'send.cameraFailed': 'Could not access camera.',
             'send.sendFailed': 'Failed to send photo. Please try again.',
             'send.disconnected': 'Connection lost. Please start over.',
+            'send.edit': 'Edit',
+            'send.rotate': 'Rotate',
+            'send.applyBW': 'B&W',
 
             // Receive page
             'receive.title': 'Receive Photos',
@@ -263,6 +266,9 @@ const i18n = (function() {
             'send.cameraFailed': 'Impossible d\'accéder à la caméra.',
             'send.sendFailed': 'Échec de l\'envoi. Veuillez réessayer.',
             'send.disconnected': 'Connexion perdue. Veuillez recommencer.',
+            'send.edit': 'Modifier',
+            'send.rotate': 'Tourner',
+            'send.applyBW': 'N&B',
 
             // Receive page
             'receive.title': 'Recevoir des Photos',

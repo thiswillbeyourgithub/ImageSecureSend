@@ -10,7 +10,7 @@
     <title>WebSend - Send Photos</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
-    <link rel="stylesheet" href="/css/style.css" integrity="sha384-cuYJcdbapStRA20/B24/DnGeI4FAflwPIS8A43LXSk0BZTaoUq5AjTQ7U5Fw67ho" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css" integrity="sha384-+/iiiCxf15vT/qJ4kNlnZ5DzhgCYshWKM2b24p88dnvCzRySJPBY9ABZTQqRWQ5Z" crossorigin="anonymous">
     <!-- QR Scanner library - lightweight (local copy to avoid CDN issues) -->
     <script src="/js/jsqr.min.js" integrity="sha384-9Q0jWoineiIq95JeIyBsNV90KKLfDsbkj29k/YFxf76a2JwkHDYkMuSbNGN6XJfV" crossorigin="anonymous"></script>
 </head>
@@ -191,6 +191,28 @@
 
             <img id="preview-image" class="image-preview" alt="Photo preview">
 
+            <!-- Edit toggle button: reveals the edit toolbar below the image -->
+            <button class="btn btn-action btn-secondary edit-toggle-btn" id="edit-toggle-btn">
+                <span class="btn-icon">✏️</span>
+                <span data-i18n="send.edit">Edit</span>
+            </button>
+
+            <!-- Edit toolbar: crop, rotate, B&W — hidden until edit is toggled -->
+            <div class="edit-toolbar hidden" id="edit-toolbar">
+                <button class="edit-tool-btn" id="rotate-btn">
+                    <span>🔄</span>
+                    <span data-i18n="send.rotate">Rotate</span>
+                </button>
+                <button class="edit-tool-btn" id="crop-btn">
+                    <span>✂️</span>
+                    <span data-i18n="crop.title">Crop</span>
+                </button>
+                <button class="edit-tool-btn" id="bw-btn">
+                    <span>⬛</span>
+                    <span data-i18n="send.applyBW">B&W</span>
+                </button>
+            </div>
+
             <div class="progress-bar hidden" id="send-progress-bar">
                 <div class="progress-bar-fill" id="send-progress-fill" style="width: 0%"></div>
             </div>
@@ -199,17 +221,10 @@
                 Encrypting and sending...
             </div>
 
-            <div class="choice-container">
-                <button class="btn btn-action btn-success btn-large" id="send-btn">
-                    <span class="btn-icon">📤</span>
-                    <span data-i18n="send.sendPhoto">Send Photo</span>
-                </button>
-
-                <button class="btn btn-action btn-secondary" id="crop-btn">
-                    <span class="btn-icon">✂️</span>
-                    <span data-i18n="crop.title">Crop Document</span>
-                </button>
-            </div>
+            <button class="btn btn-action btn-success btn-large" id="send-btn">
+                <span class="btn-icon">📤</span>
+                <span data-i18n="send.sendPhoto">Send Photo</span>
+            </button>
 
             <button class="btn btn-action btn-secondary" id="retake-btn" data-i18n="send.retake">
                 Retake / Choose Another
@@ -1224,8 +1239,16 @@
             fullResImg: null        // Full-resolution image element for magnifier sampling
         };
 
-        // Wire up the crop button in the preview step
+        // Wire up crop, rotate, B&W, and edit-toolbar toggle in the preview step
+
+        // Toggle the edit toolbar visibility when the user clicks "Edit"
+        document.getElementById('edit-toggle-btn').addEventListener('click', () => {
+            document.getElementById('edit-toolbar').classList.toggle('hidden');
+        });
+
         document.getElementById('crop-btn').addEventListener('click', openCropModal);
+        document.getElementById('rotate-btn').addEventListener('click', rotateCW);
+        document.getElementById('bw-btn').addEventListener('click', applyBWMode);
 
         /**
          * Open the crop modal for the current preview image.
@@ -1274,6 +1297,128 @@
             }
             document.getElementById('crop-modal').classList.add('hidden');
             cropState.dragging = null;
+        }
+
+        // ============ Image editing: Rotate & B&W ============
+
+        /**
+         * Rotate currentPhotoBlob 90° clockwise using canvas.
+         * Updates both currentPhotoBlob and the preview image.
+         * Also resets originalPhotoBlob to the rotated version so re-cropping
+         * starts from the correct orientation.
+         */
+        async function rotateCW() {
+            if (!currentPhotoBlob) return;
+            logger.info('Rotating 90° CW...');
+
+            const img = new Image();
+            const url = URL.createObjectURL(currentPhotoBlob);
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = url;
+            });
+            URL.revokeObjectURL(url);
+
+            // Draw rotated into canvas: swap width/height
+            const canvas = document.createElement('canvas');
+            canvas.width = img.height;
+            canvas.height = img.width;
+            const ctx = canvas.getContext('2d');
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(Math.PI / 2);
+            ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+            const rotatedBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+            const filename = currentPhotoBlob.name || `photo_${Date.now()}.jpg`;
+            currentPhotoBlob = new File([rotatedBlob], filename, { type: 'image/jpeg' });
+            // Rotation is applied to the "base" image — re-crop must use this as origin
+            originalPhotoBlob = currentPhotoBlob;
+            logger.success(`Rotated: ${canvas.width}x${canvas.height}px`);
+            showPreview(currentPhotoBlob);
+        }
+
+        /**
+         * Apply Otsu's binarization (B&W document mode) to currentPhotoBlob.
+         * Uses the same Otsu algorithm as the receiver side so the result is consistent.
+         * Updates both currentPhotoBlob and the preview.
+         */
+        async function applyBWMode() {
+            if (!currentPhotoBlob) return;
+            logger.info('Applying B&W (Otsu) mode...');
+
+            const img = new Image();
+            const url = URL.createObjectURL(currentPhotoBlob);
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = url;
+            });
+            URL.revokeObjectURL(url);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            applyOtsu(imageData);
+            ctx.putImageData(imageData, 0, 0);
+
+            // Export as PNG to preserve sharp B&W edges without JPEG artifacts
+            const bwBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            const filename = (currentPhotoBlob.name || `photo_${Date.now()}`).replace(/\.[^.]+$/, '.png');
+            currentPhotoBlob = new File([bwBlob], filename, { type: 'image/png' });
+            originalPhotoBlob = currentPhotoBlob;
+            logger.success('B&W applied');
+            showPreview(currentPhotoBlob);
+        }
+
+        /**
+         * Apply Otsu's global thresholding to an ImageData in place.
+         * Converts the image to grayscale, computes the optimal threshold
+         * that minimizes intra-class variance, then binarizes each pixel to
+         * pure black or white. Identical to the receiver-side implementation.
+         * @param {ImageData} imageData - Will be mutated in place
+         */
+        function applyOtsu(imageData) {
+            const data = imageData.data;
+            const len = data.length;
+
+            // Build grayscale histogram (256 bins)
+            const hist = new Array(256).fill(0);
+            for (let i = 0; i < len; i += 4) {
+                // Standard luminance weights (ITU-R BT.601)
+                const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+                hist[gray]++;
+            }
+
+            const total = len / 4;
+            let sumAll = 0;
+            for (let i = 0; i < 256; i++) sumAll += i * hist[i];
+
+            // Find threshold that maximizes inter-class variance (Otsu's method)
+            let sumBg = 0, wBg = 0, maxVar = 0, threshold = 128;
+            for (let t = 0; t < 256; t++) {
+                wBg += hist[t];
+                if (wBg === 0) continue;
+                const wFg = total - wBg;
+                if (wFg === 0) break;
+                sumBg += t * hist[t];
+                const mBg = sumBg / wBg;
+                const mFg = (sumAll - sumBg) / wFg;
+                const varBetween = wBg * wFg * (mBg - mFg) ** 2;
+                if (varBetween > maxVar) { maxVar = varBetween; threshold = t; }
+            }
+
+            // Binarize: pixels above threshold → white, at or below → black
+            for (let i = 0; i < len; i += 4) {
+                const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+                const v = gray > threshold ? 255 : 0;
+                data[i] = data[i + 1] = data[i + 2] = v;
+                data[i + 3] = 255;
+            }
         }
 
         /**
