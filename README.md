@@ -90,7 +90,10 @@ This project was developed with AI assistance ([Claude Code](https://claude.ai/c
 - **PWA (Progressive Web App)**: installable on mobile home screens, with service worker for fast UI shell loading
 - **Internationalization (i18n)**: supports English and French, auto-detected from browser locale
 - **Document cropping**: perspective-corrected 4-corner crop tool on the receiver side (pure vanilla JS, no dependencies)
+- **Export modal**: download all received images as PDF or ZIP, with optional B&W (Otsu thresholding) and OCR (scribe.js)
 - **PDF export**: download all received images as a single PDF (hand-crafted minimal PDF generator, no dependencies)
+- **ZIP export**: download all received images as a ZIP archive (client-zip, lazy-loaded on demand)
+- **B&W document mode**: Otsu's automatic binarization for crisp scanned documents
 - **QR code scanning**: in-browser QR code scanning (jsQR) and generation (qrcode.js)
 - **Connection type detection**: shows whether the connection is direct (local network or via STUN) or relayed (TURN)
 - **Debug logging**: "Logs" button on both sender and receiver pages for troubleshooting, with optional verbose DEV mode

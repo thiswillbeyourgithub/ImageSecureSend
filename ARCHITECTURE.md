@@ -68,7 +68,9 @@ WebSend/
         │   │               #   compresses with deflate, reconstructs minimal valid SDP).
         │   │               #   Used to keep QR codes small
         │   ├── qrcode.min.js # QR code generator library (vendored, used by receiver)
-        │   └── jsqr.min.js # QR code scanner library (vendored, used by sender)
+        │   ├── jsqr.min.js # QR code scanner library (vendored, used by sender)
+        │   └── vendor/
+        │       └── client-zip.js # ZIP generator (ESM, ~6KB, lazy-loaded on demand)
         │
         └── icons/
             ├── icon-192.png # PWA icon (192x192)
