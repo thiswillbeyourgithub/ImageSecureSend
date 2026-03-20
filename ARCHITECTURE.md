@@ -26,7 +26,8 @@ WebSend/
 │   └── env.example         # Documented env vars: DOMAIN, ICE servers, TURN credentials
 │
 └── src/
-    ├── server.js           # Express server: signaling API, ICE config, static serving
+    ├── server.js           # Express server: signaling API, ICE config, static serving,
+    │                       #   serves scribe.js-ocr from node_modules at /scribe/
     ├── package.json        # Dependencies (express only)
     ├── update-sri.js       # SRI hash generator for script/link integrity attributes
     ├── sri-hashes.json     # Generated SRI hashes (used by update-sri.js)

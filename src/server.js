@@ -351,6 +351,11 @@ if (UMAMI_URL && UMAMI_WEBSITE_ID) {
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve scribe.js-ocr files from node_modules so the browser can lazy-load
+// the OCR engine on demand. These are heavy (WASM + models) and only fetched
+// when the user explicitly requests OCR in the export modal.
+app.use('/scribe', express.static(path.join(__dirname, 'node_modules', 'scribe.js-ocr')));
+
 /**
  * Generate time-based TURN credentials using HMAC-SHA1.
  * This follows the TURN REST API / coturn ephemeral credentials standard.

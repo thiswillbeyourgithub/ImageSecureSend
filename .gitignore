@@ -1,6 +1,9 @@
 # Environment files with secrets
 docker/.env
 
+# Dependencies
+node_modules/
+
 # dev
 .aider.*
 deploy.sh

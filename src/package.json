@@ -8,6 +8,7 @@
     "update-sri": "node update-sri.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "scribe.js-ocr": "^0.10.1"
   }
 }
