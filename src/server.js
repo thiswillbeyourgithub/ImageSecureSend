@@ -24,6 +24,10 @@ const UMAMI_WEBSITE_ID = process.env.UMAMI_WEBSITE_ID || '';
 // UMAMI_DNT: whether to respect Do Not Track browser setting ("true" or "false", default: "true")
 const UMAMI_DNT = process.env.UMAMI_DNT || 'true';
 
+// OCR settings (scribe.js)
+const OCR_LANGS = process.env.OCR_LANGS || 'eng,fra';
+const OCR_PSM = process.env.OCR_PSM || '6';
+
 // ============ ICE Server Configuration ============
 // STUN_SERVER: optional self-hosted STUN server (host:port)
 const STUN_SERVER = process.env.STUN_SERVER || '';
@@ -507,7 +511,9 @@ app.get('/api/config', (req, res) => {
         forceConnection: DEV_FORCE_CONNECTION !== 'DEFAULT' ? DEV_FORCE_CONNECTION : undefined,
         dev: DEV,
         turnTimeout: TURN_TIMEOUT,
-        version: APP_VERSION
+        version: APP_VERSION,
+        ocrLangs: OCR_LANGS.split(',').map(l => l.trim()),
+        ocrPsm: OCR_PSM
     });
 });
 
@@ -740,6 +746,8 @@ app.listen(PORT, '0.0.0.0', () => {
         { name: 'UMAMI_URL',             value: process.env.UMAMI_URL,            used: UMAMI_URL || '(none)' },
         { name: 'UMAMI_WEBSITE_ID',      value: process.env.UMAMI_WEBSITE_ID,     used: UMAMI_WEBSITE_ID || '(none)' },
         { name: 'UMAMI_DNT',             value: process.env.UMAMI_DNT,            used: UMAMI_DNT },
+        { name: 'OCR_LANGS',             value: process.env.OCR_LANGS,            used: OCR_LANGS },
+        { name: 'OCR_PSM',               value: process.env.OCR_PSM,              used: OCR_PSM },
     ];
 
     for (const v of envVars) {

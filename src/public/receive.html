@@ -264,6 +264,7 @@
                 // Fetch config for ICE servers and dev mode
                 const configResponse = await fetch('/api/config');
                 const config = await configResponse.json();
+                window.__wsConfig = config;
 
                 // Enable eruda mobile console asap when server is in DEV mode
                 if (config.dev) { await loadEruda(); }
@@ -1109,8 +1110,10 @@
                 btn.textContent = i18n.t('receive.ocrProcessing');
                 await scribe.importFiles(files);
 
-                // Run OCR recognition (English + French since the app is bilingual)
-                await scribe.recognize({ langs: ['eng', 'fra'] });
+                // Run OCR recognition with server-configured languages, PSM, and best accuracy (combined OEM)
+                const ocrLangs = window.__wsConfig?.ocrLangs || ['eng', 'fra'];
+                const ocrPsm = window.__wsConfig?.ocrPsm || '6';
+                await scribe.recognize({ langs: ocrLangs, modeAdv: 'combined', config: { tessedit_pageseg_mode: ocrPsm } });
 
                 // Export as searchable PDF
                 const pdfBlob = await scribe.exportData('pdf');
