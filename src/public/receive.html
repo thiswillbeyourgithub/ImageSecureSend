@@ -562,7 +562,7 @@
                     const imageBlob = new Blob([imageData], { type: imageMimeType });
                     const imageUrl = URL.createObjectURL(imageBlob);
 
-                    const imageName = metadata.name || `photo_${photoCount + 1}.png`;
+                    const imageName = metadata.name || `websend_${photoCount + 1}.png`;
 
                     // Add to received images with original filename
                     // Store first so we have the index, then add to UI

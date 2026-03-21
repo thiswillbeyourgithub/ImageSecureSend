@@ -1168,7 +1168,7 @@
                 document.getElementById('send-status').textContent = i18n.t('send.encrypting');
 
                 // Determine filename - use original if from file picker, otherwise generate
-                const filename = currentPhotoBlob.name || `photo_${Date.now()}.png`;
+                const filename = currentPhotoBlob.name || `websend_${Date.now()}.png`;
                 const mimeType = currentPhotoBlob.type || 'image/png';
 
                 const encryptedData = await WebSendCrypto.encryptWithMetadata(
@@ -1451,7 +1451,7 @@
             ctx.drawImage(img, -img.width / 2, -img.height / 2);
 
             const rotatedBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
-            const filename = currentPhotoBlob.name || `photo_${Date.now()}.jpg`;
+            const filename = currentPhotoBlob.name || `websend_${Date.now()}.jpg`;
             currentPhotoBlob = new File([rotatedBlob], filename, { type: 'image/jpeg' });
             // Rotation is applied to the "base" image — re-crop must use this as origin
             originalPhotoBlob = currentPhotoBlob;
@@ -1501,7 +1501,7 @@
 
             // Export as PNG to preserve sharp B&W edges without JPEG artifacts
             const bwBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-            const filename = (currentPhotoBlob.name || `photo_${Date.now()}`).replace(/\.[^.]+$/, '.png');
+            const filename = (currentPhotoBlob.name || `websend_${Date.now()}`).replace(/\.[^.]+$/, '.png');
             currentPhotoBlob = new File([bwBlob], filename, { type: 'image/png' });
             document.getElementById('bw-btn').classList.add('active');
             logger.success('B&W applied (click again to undo)');
@@ -1751,7 +1751,7 @@
                 });
 
                 // Update currentPhotoBlob with the cropped result
-                currentPhotoBlob = new File([resultBlob], currentPhotoBlob.name || `photo_${Date.now()}.jpg`, {
+                currentPhotoBlob = new File([resultBlob], currentPhotoBlob.name || `websend_${Date.now()}.jpg`, {
                     type: 'image/jpeg'
                 });
 
