@@ -653,6 +653,12 @@ h1 {
     transition: background 0.15s;
 }
 
+.edit-tool-btn.active {
+    background: #4a4a7a;
+    border-color: #7a7aff;
+    box-shadow: 0 0 8px rgba(122, 122, 255, 0.3);
+}
+
 .edit-tool-btn span:first-child {
     font-size: 1.4rem;
 }

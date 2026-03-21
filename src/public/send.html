@@ -10,7 +10,7 @@
     <title>WebSend - Send Photos</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
-    <link rel="stylesheet" href="/css/style.css" integrity="sha384-ihety/NYMTfqYFNqUx65xpg5k8sgtLu4oJ15SOiNg0N2Z9ga14LzGu+lmqPa6ljJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css" integrity="sha384-UQzfsoRdBhTaVgu3AGKgiinOwvVd9IEBq613EYnH7wsLJ5BeVKUtJpvrXQWuuSQV" crossorigin="anonymous">
     <!-- QR Scanner library - lightweight (local copy to avoid CDN issues) -->
     <script src="/js/jsqr.min.js" integrity="sha384-9Q0jWoineiIq95JeIyBsNV90KKLfDsbkj29k/YFxf76a2JwkHDYkMuSbNGN6XJfV" crossorigin="anonymous"></script>
 </head>
@@ -316,6 +316,7 @@
         let currentPhotoBlob = null;
         // Stores the original (pre-crop) blob so re-cropping uses the uncropped image
         let originalPhotoBlob = null;
+        let preBWBlob = null; // Stores pre-B&W blob for undo
         let weConfirmed = false;  // Track if we confirmed fingerprints
         let theyConfirmed = false; // Track if receiver confirmed fingerprints
         let cameraZoom = 1;
@@ -443,7 +444,12 @@
                 showStep(stepChoose);
             });
             document.getElementById('send-btn').addEventListener('click', sendPhoto);
-            document.getElementById('retake-btn').addEventListener('click', () => showStep(stepChoose));
+            document.getElementById('retake-btn').addEventListener('click', () => {
+                preBWBlob = null;
+                document.getElementById('bw-btn').classList.remove('active');
+                document.getElementById('edit-toolbar').classList.add('hidden');
+                showStep(stepChoose);
+            });
             document.getElementById('send-another-btn').addEventListener('click', () => showStep(stepChoose));
 
             // Set up document detection toggle button
@@ -663,6 +669,7 @@
         function cleanupAllData() {
             currentPhotoBlob = null;
             originalPhotoBlob = null;
+            preBWBlob = null;
             // Revoke preview image URL
             const preview = document.getElementById('preview-image');
             if (preview && preview.src && preview.src.startsWith('blob:')) {
@@ -1217,6 +1224,7 @@
             // Clear sent photo data from memory — receiver confirmed receipt
             currentPhotoBlob = null;
             originalPhotoBlob = null;
+            preBWBlob = null;
             const preview = document.getElementById('preview-image');
             if (preview.src && preview.src.startsWith('blob:')) {
                 URL.revokeObjectURL(preview.src);
@@ -1458,7 +1466,19 @@
          */
         async function applyBWMode() {
             if (!currentPhotoBlob) return;
+
+            // If B&W was already applied, undo it
+            if (preBWBlob) {
+                currentPhotoBlob = preBWBlob;
+                preBWBlob = null;
+                document.getElementById('bw-btn').classList.remove('active');
+                logger.info('B&W undone');
+                showPreview(currentPhotoBlob);
+                return;
+            }
+
             logger.info('Applying B&W (Otsu) mode...');
+            preBWBlob = currentPhotoBlob;
 
             const img = new Image();
             const url = URL.createObjectURL(currentPhotoBlob);
@@ -1483,8 +1503,8 @@
             const bwBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
             const filename = (currentPhotoBlob.name || `photo_${Date.now()}`).replace(/\.[^.]+$/, '.png');
             currentPhotoBlob = new File([bwBlob], filename, { type: 'image/png' });
-            originalPhotoBlob = currentPhotoBlob;
-            logger.success('B&W applied');
+            document.getElementById('bw-btn').classList.add('active');
+            logger.success('B&W applied (click again to undo)');
             showPreview(currentPhotoBlob);
         }
 
