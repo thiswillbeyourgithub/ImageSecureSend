@@ -13,7 +13,7 @@
 const DocDetect = (function () {
     'use strict';
 
-    const TARGET_WIDTH = 250; // Downscale target for performance
+    const TARGET_WIDTH = 400; // Downscale target — higher for better edge detection
 
     /**
      * Detect document edges from a video element.
@@ -95,15 +95,17 @@ const DocDetect = (function () {
         // 3. Sobel edge detection
         const edges = _sobelEdges(blurred, w, h);
 
-        // 4. Otsu threshold on edge magnitudes
-        const threshold = _otsuThreshold(edges);
+        // 4. Otsu threshold on edge magnitudes (use 60% of Otsu for higher sensitivity)
+        const threshold = Math.max(_otsuThreshold(edges) * 0.6, 10);
         const binary = new Uint8Array(w * h);
         for (let i = 0; i < edges.length; i++) {
             binary[i] = edges[i] >= threshold ? 1 : 0;
         }
 
-        // 5. Dilate to close small gaps in edges
-        const dilated = _dilate(binary, w, h);
+        // 5. Dilate multiple times to close gaps in edges (e.g. grid lines on paper)
+        let dilated = _dilate(binary, w, h);
+        dilated = _dilate(dilated, w, h);
+        dilated = _dilate(dilated, w, h);
 
         // 6. Find contours
         const contours = _findContours(dilated, w, h);
@@ -262,7 +264,7 @@ const DocDetect = (function () {
                     steps++;
                 } while ((cx !== startX || cy !== startY) && steps < maxSteps);
 
-                if (contour.length >= 20) {
+                if (contour.length >= 10) {
                     contours.push(contour);
                 }
             }
@@ -275,20 +277,22 @@ const DocDetect = (function () {
      * Uses Douglas-Peucker simplification to reduce contours to polygons.
      */
     function _findLargestQuad(contours, w, h) {
-        const minArea = w * h * 0.08; // Quad must be >8% of frame
+        const minArea = w * h * 0.03; // Quad must be >3% of frame
         let bestQuad = null;
         let bestArea = 0;
 
         for (const contour of contours) {
             const perimeter = _perimeter(contour);
             // Try multiple epsilon values for Douglas-Peucker
-            for (let epsRatio = 0.01; epsRatio <= 0.05; epsRatio += 0.005) {
+            for (let epsRatio = 0.005; epsRatio <= 0.08; epsRatio += 0.003) {
                 const simplified = _douglasPeucker(contour, perimeter * epsRatio);
-                if (simplified.length === 4) {
-                    const area = _polygonArea(simplified);
-                    if (area > minArea && area > bestArea && _isConvex(simplified)) {
+                if (simplified.length >= 4 && simplified.length <= 6) {
+                    // If more than 4 points, reduce to best 4 by removing least-significant vertices
+                    const quad = simplified.length === 4 ? simplified : _reduceToQuad(simplified);
+                    const area = _polygonArea(quad);
+                    if (area > minArea && area > bestArea && _isConvex(quad)) {
                         bestArea = area;
-                        bestQuad = simplified;
+                        bestQuad = quad;
                     }
                 }
             }
@@ -359,6 +363,27 @@ const DocDetect = (function () {
             }
         }
         return true;
+    }
+
+    /**
+     * Reduce a polygon with 5-6 vertices to the best 4 by iteratively
+     * removing the vertex that contributes least area.
+     */
+    function _reduceToQuad(pts) {
+        const arr = pts.slice();
+        while (arr.length > 4) {
+            let minContrib = Infinity, minIdx = 0;
+            for (let i = 0; i < arr.length; i++) {
+                const prev = arr[(i - 1 + arr.length) % arr.length];
+                const curr = arr[i];
+                const next = arr[(i + 1) % arr.length];
+                // Triangle area formed by removing this vertex
+                const contrib = Math.abs((next.x - prev.x) * (curr.y - prev.y) - (curr.x - prev.x) * (next.y - prev.y)) / 2;
+                if (contrib < minContrib) { minContrib = contrib; minIdx = i; }
+            }
+            arr.splice(minIdx, 1);
+        }
+        return arr;
     }
 
     /**
