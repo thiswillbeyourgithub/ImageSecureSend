@@ -967,28 +967,59 @@ footer {
     margin-bottom: 15px;
 }
 
-.export-radio-label,
-.export-checkbox-label {
+/* Segmented control for format selection (ZIP / PDF) */
+.export-segmented {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.export-radio-label:hover,
-.export-checkbox-label:hover {
+.export-seg-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.export-seg-btn:hover {
     background: rgba(255, 255, 255, 0.08);
 }
 
-/* Dim labels whose input is disabled */
-.export-radio-label:has(input:disabled),
-.export-checkbox-label:has(input:disabled) {
-    opacity: 0.5;
-    cursor: not-allowed;
+.export-seg-btn.active {
+    background: rgba(233, 69, 96, 0.25);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Toggle buttons for options (B&W, OCR) */
+.export-toggle-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    margin-bottom: 8px;
+}
+
+.export-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.export-toggle-btn.active {
+    background: rgba(233, 69, 96, 0.2);
+    border-color: #e94560;
+    color: #fff;
 }
 
 .coming-soon {
