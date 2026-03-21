@@ -3,7 +3,7 @@ services:
     container_name: websend
     build:
       context: ../src
-      dockerfile: ./docker/Dockerfile
+      dockerfile: ../docker/Dockerfile
     ports:
       - "127.0.0.1:7395:8080"
     restart: unless-stopped
