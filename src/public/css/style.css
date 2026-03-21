@@ -620,11 +620,10 @@ h1 {
     margin: 10px 0;
 }
 
-/* Edit toggle button: sits below the preview image, full-width secondary style */
+/* Edit toggle button */
 .edit-toggle-btn {
-    width: 100%;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 /* Edit toolbar: three icon+label buttons side by side */

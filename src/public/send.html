@@ -10,7 +10,7 @@
     <title>WebSend - Send Photos</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
-    <link rel="stylesheet" href="/css/style.css" integrity="sha384-UQzfsoRdBhTaVgu3AGKgiinOwvVd9IEBq613EYnH7wsLJ5BeVKUtJpvrXQWuuSQV" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css" integrity="sha384-eM/XpMCX5MLmyXhnb96nr8SSlfmkpW3JG5wyXQtAX9dJcIemMrQgHplZM7JXUbLq" crossorigin="anonymous">
     <!-- QR Scanner library - lightweight (local copy to avoid CDN issues) -->
     <script src="/js/jsqr.min.js" integrity="sha384-9Q0jWoineiIq95JeIyBsNV90KKLfDsbkj29k/YFxf76a2JwkHDYkMuSbNGN6XJfV" crossorigin="anonymous"></script>
 </head>
@@ -201,12 +201,6 @@
 
             <img id="preview-image" class="image-preview" alt="Photo preview">
 
-            <!-- Edit toggle button: reveals the edit toolbar below the image -->
-            <button class="btn btn-action btn-secondary edit-toggle-btn" id="edit-toggle-btn">
-                <span class="btn-icon">✏️</span>
-                <span data-i18n="send.edit">Edit</span>
-            </button>
-
             <!-- Edit toolbar: crop, rotate, B&W — hidden until edit is toggled -->
             <div class="edit-toolbar hidden" id="edit-toolbar">
                 <button class="edit-tool-btn" id="rotate-btn">
@@ -231,14 +225,20 @@
                 Encrypting and sending...
             </div>
 
-            <button class="btn btn-action btn-success btn-large" id="send-btn">
-                <span class="btn-icon">📤</span>
-                <span data-i18n="send.sendPhoto">Send Photo</span>
-            </button>
-
-            <button class="btn btn-action btn-secondary" id="retake-btn" data-i18n="send.retake">
-                Retake / Choose Another
-            </button>
+            <!-- Action buttons row: Edit, Send, Cancel side by side -->
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-action btn-secondary edit-toggle-btn" id="edit-toggle-btn" style="flex: 1; min-width: 80px;">
+                    <span class="btn-icon">✏️</span>
+                    <span data-i18n="send.edit">Edit</span>
+                </button>
+                <button class="btn btn-action btn-success btn-large" id="send-btn" style="flex: 2; min-width: 120px;">
+                    <span class="btn-icon">📤</span>
+                    <span data-i18n="send.sendPhoto">Send Photo</span>
+                </button>
+                <button class="btn btn-action btn-secondary" id="retake-btn" style="flex: 1; min-width: 80px;" data-i18n="send.cancel">
+                    Cancel
+                </button>
+            </div>
         </div>
 
         <!-- Crop modal (perspective correction before sending) -->
