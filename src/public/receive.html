@@ -1182,7 +1182,8 @@
 
             try {
                 // Lazy-load scribe.js from the /scribe/ static route
-                const scribe = await import('/scribe/scribe.js');
+                const scribeModule = await import('/scribe/scribe.js');
+                const scribe = scribeModule.default;
 
                 // Initialize OCR engine with font support (needed for text layer)
                 btn.textContent = i18n.t('receive.ocrInitializing');
